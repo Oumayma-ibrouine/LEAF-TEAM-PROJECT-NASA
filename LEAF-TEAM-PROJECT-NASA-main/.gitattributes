@@ -1,0 +1,9 @@
+* text=auto
+*.pdf binary
+*.jpeg binary
+*.jpg binary
+*.png binary
+*.webp binary
+*.parquet binary
+*.db binary
+*.tif binary

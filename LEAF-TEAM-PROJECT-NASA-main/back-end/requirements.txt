@@ -1,0 +1,16 @@
+fastapi==0.163.1
+uvicorn==0.54.0
+pydantic==2.14.3
+requests==2.34.2
+numpy==2.4.6
+pandas==3.1.1
+pyarrow==26.0.1
+shapely==2.2.0
+pyproj==3.7.2
+rasterio==1.4.4
+matplotlib==3.11.2
+plotly==7.1.0
+reportlab==5.1.0
+anthropic==2.8.0
+# optionnel : pluie GPM via Google Earth Engine
+earthengine-api==1.7.52

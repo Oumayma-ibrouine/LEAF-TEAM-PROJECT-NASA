@@ -1,0 +1,2702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#16382B">
+<title>LEAFTEAM | Farm Management</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800&display=swap');
+:root{--dark:#16382B;--green:#24523F;--green2:#2f6b52;--light:#558667;--cream:#FAF8F5;--white:#fff;--text:#20352B;--muted:#718078;--border:#E4E9E3;--red:#B74747;--ring:#55866755}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:Inter,Arial,sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+html[lang="ar"] body,html[lang="ar"] button,html[lang="ar"] input,html[lang="ar"] select,html[lang="ar"] textarea{font-family:Cairo,Inter,Arial,sans-serif}
+html[lang="ar"] body{line-height:1.75}
+html[lang="ar"] .brand,html[lang="ar"] .topbrand,html[lang="ar"] .navlabel{letter-spacing:0}
+html[lang="ar"] .hero h1{line-height:1.45}
+html[lang="ar"] .btn,html[lang="ar"] .tab,html[lang="ar"] .navbtn,html[lang="ar"] label{font-weight:700}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hidden{display:none!important}
+#leaves{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.55}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:0;border-radius:12px;padding:0 18px;font-size:13px;font-weight:700;line-height:1.2;text-align:center;transition:transform .15s ease,box-shadow .2s ease,background .2s ease,filter .2s ease;user-select:none}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.97)}
+.btn:focus-visible,.tab:focus-visible,.navbtn:focus-visible,.role:focus-visible,.close:focus-visible,.icon-btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn .ico{font-size:16px;line-height:1;font-weight:800}
+.primary{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;box-shadow:0 6px 16px #24523F40}
+.primary:hover{box-shadow:0 9px 22px #24523F55}
+.secondary{background:#E8F0E7;color:var(--green);box-shadow:inset 0 0 0 1px #D3E2D2}
+.secondary:hover{background:#DCEADB}
+.danger{background:#FBEAEA;color:var(--red);box-shadow:inset 0 0 0 1px #F2CFCF}
+.danger:hover{background:#F8DCDC}
+.full{width:100%}
+.btn-sm{min-height:38px;padding:0 13px;font-size:12px;border-radius:10px}
+
+input,select,textarea{width:100%;padding:12px 14px;min-height:46px;border:1px solid #DCE4DC;border-radius:12px;background:white;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--light);box-shadow:0 0 0 4px var(--ring)}
+input[type=email],input[type=tel],input[type=password]{direction:ltr}
+[dir="rtl"] input[type=email],[dir="rtl"] input[type=tel],[dir="rtl"] input[type=password]{text-align:right}
+select{appearance:none;-webkit-appearance:none;padding-inline-end:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2324523F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+[dir="rtl"] select{background-position:left 14px center}
+label{display:block;font-size:12px;font-weight:700;margin-bottom:7px}
+.form-group{margin-bottom:15px}
+textarea{resize:vertical;min-height:90px}
+.muted,.small{color:var(--muted)}
+.small{font-size:11px;line-height:1.7}
+.logo{width:54px;height:54px;object-fit:contain;border-radius:9px}
+#languagePicker,#appLanguage{width:auto;min-height:42px;padding:8px 34px 8px 14px;border:1px solid var(--border);border-radius:999px;background-color:white;color:var(--green);font-weight:700;font-size:13px;max-width:150px}
+[dir="rtl"] #languagePicker,[dir="rtl"] #appLanguage{padding:8px 14px 8px 34px}
+
+/* ---------- Auth ---------- */
+#auth{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1fr 460px}
+.hero{padding:7%;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh;background:linear-gradient(140deg,#16382BEE,#24523FDD);color:white}
+.brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800;letter-spacing:1px}
+.hero h1{font-size:clamp(36px,5vw,60px);line-height:1.12;margin-bottom:20px}
+.hero p{line-height:1.8;max-width:500px;color:#FFFFFFCE}
+.auth-panel{padding:30px;display:flex;align-items:center;justify-content:center;background:#FAF8F5E8}
+.auth-box{width:100%;max-width:390px}
+.auth-box h2{font-size:28px;margin-bottom:10px}
+.auth-box>p{font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:22px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#EAEDE7;border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{border:0;background:transparent;min-height:42px;padding:0 10px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted);transition:all .2s}
+.tab.active{background:white;color:var(--green);box-shadow:0 2px 8px #16382B18}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.role{display:flex;align-items:center;gap:8px;min-height:46px;border:1px solid var(--border);border-radius:12px;background:white;padding:8px 11px;font-size:12px;text-align:start;transition:all .2s}
+.role:hover{border-color:var(--light)}
+.role.active{border-color:var(--green);background:#E8F0E7;color:var(--green);font-weight:800;box-shadow:0 0 0 3px var(--ring)}
+
+/* ---------- App shell ---------- */
+#app{position:relative;z-index:1;min-height:100vh}
+.topbar{height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 25px;background:#FFFFFFED;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;gap:12px;backdrop-filter:blur(8px)}
+.topbrand{display:flex;align-items:center;gap:10px;font-size:21px;letter-spacing:1px;font-weight:800}
+.topright{display:flex;align-items:center;gap:10px}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--green),var(--light));color:white;font-weight:800;flex-shrink:0}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);max-width:1500px;margin:auto}
+.sidebar{padding:22px 13px;border-inline-end:1px solid var(--border);min-height:calc(100vh - 74px)}
+.navlabel{font-size:10px;font-weight:800;letter-spacing:1px;color:#89968D;padding:10px}
+.navbtn{display:flex;align-items:center;gap:12px;width:100%;min-height:46px;border:0;background:transparent;text-align:start;padding:0 12px;border-radius:12px;margin-bottom:5px;font-size:13px;color:#607066;font-weight:600;transition:all .2s}
+.navbtn .ni{width:22px;text-align:center;font-size:16px;flex-shrink:0}
+.navbtn:hover{background:#F0F4EE}
+.navbtn.active{background:#E8F0E7;color:var(--green);font-weight:800}
+.content{padding:28px;min-width:0}
+.view{display:none}
+.view.active{display:block}
+.view-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:24px}
+.view-head h1{font-size:clamp(23px,3vw,31px);margin-bottom:7px}
+.view-head p{font-size:13px;line-height:1.7;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:23px}
+.stat,.panel,.field-card{background:#FFFFFFED;border:1px solid var(--border);border-radius:16px;box-shadow:0 7px 25px #16382B08}
+.stat{padding:19px}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:12px}
+.stat-value{font-size:25px;font-weight:800;color:var(--dark);overflow-wrap:anywhere}
+.stat-note{font-size:10px;color:var(--muted);margin-top:7px}
+html[lang="ar"] .stat-note{font-size:11px}
+.panel{padding:20px;margin-bottom:19px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:17px}
+.panel-head h3{font-size:16px}
+.panel-head p{font-size:12px;color:var(--muted);margin-top:5px}
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.field-card{overflow:hidden;min-width:0}
+.field-cover{padding:19px;background:linear-gradient(135deg,#E5EFE2,#F8F5E9);border-bottom:1px solid var(--border)}
+.field-cover h3{font-size:19px;margin-bottom:8px;overflow-wrap:anywhere}
+.field-cover p{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.field-body{padding:17px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}
+.detail-label{font-size:10px;color:var(--muted);margin-bottom:6px}
+html[lang="ar"] .detail-label{font-size:11px}
+.detail-value{font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.status{display:inline-block;padding:6px 10px;border-radius:20px;background:#E9EEE9;color:var(--green);font-size:10px;font-weight:800}
+html[lang="ar"] .status{font-size:11px}
+.status.active{background:#DFF1E2}
+.field-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.field-actions .btn{flex:1;font-size:12px;padding:0 10px;min-height:42px}
+.analysis{margin-top:12px;padding:13px;background:#EFF5EC;border-radius:12px;font-size:12px;line-height:1.7}
+.task{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #EEF0EC;font-size:12px}
+.task input{width:18px;height:18px;min-height:0;padding:0;margin-top:2px;accent-color:var(--green);flex-shrink:0;box-shadow:none}
+.task-text{flex:1;min-width:0;overflow-wrap:anywhere}
+.task-text small{display:block;color:var(--muted);margin-top:5px}
+.task.done .task-text{text-decoration:line-through;opacity:.5}
+.icon-btn{width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:var(--red);font-size:20px;line-height:1;transition:background .2s;flex-shrink:0}
+.icon-btn:hover{background:#FBEAEA}
+.empty{text-align:center;padding:28px 12px;color:var(--muted);font-size:13px;line-height:1.8}
+.empty b{display:block;color:var(--green);font-size:15px;margin:8px}
+.map{height:300px;border:1px solid #D4E0D1;border-radius:12px;position:relative;cursor:crosshair;overflow:hidden;background-color:#E8EEDF}
+.health-layout{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+
+/* ---------- Camera / photo ---------- */
+.dropzone{padding:20px;text-align:center;border:2px dashed #9BB59D;border-radius:16px;background:#F5F8F1}
+.dz-icon{width:64px;height:64px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:#E3EEDF;font-size:30px}
+.photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.photo-actions input[type=file]{display:none}
+.preview-wrap{position:relative;margin-top:14px}
+.preview,video{width:100%;max-height:280px;object-fit:contain;border-radius:12px;background:#0F2A20}
+.preview-wrap .preview{display:block}
+.preview-remove{position:absolute;top:8px;inset-inline-end:8px;width:36px;height:36px;border:0;border-radius:50%;background:#000000A0;color:white;font-size:20px;line-height:1;backdrop-filter:blur(4px)}
+.result{padding:16px;border-radius:12px;background:#EFF5EC;font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.result h3{margin-bottom:10px}
+.result ul{padding-inline-start:20px;margin-top:8px}
+.result img.report-img{display:block;width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin:8px 0}
+.camera-modal .modal{background:#0F2A20;color:white;padding:18px}
+.camera-modal .modal-head h2{color:white}
+.camera-modal .close{background:#FFFFFF22;color:white}
+.camera-stage{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.camera-stage video{width:100%;height:100%;max-height:none;margin:0;object-fit:cover;border-radius:0;background:#000}
+.camera-stage video.mirror{transform:scaleX(-1)}
+.camera-stage:after{content:"";position:absolute;inset:14px;border:2px solid #FFFFFF66;border-radius:12px;pointer-events:none}
+.camera-error{padding:14px;border-radius:12px;background:#FBEAEA;color:var(--red);font-size:12px;line-height:1.7;margin-bottom:12px}
+.camera-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
+.shutter{width:72px;height:72px;border-radius:50%;border:4px solid white;background:#FFFFFF33;padding:5px;flex-shrink:0;transition:transform .15s}
+.shutter:active{transform:scale(.92)}
+.shutter:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.shutter span{display:block;width:100%;height:100%;border-radius:50%;background:white}
+.camera-controls .btn{background:#FFFFFF22;color:white;box-shadow:none;min-width:96px}
+.camera-controls .btn:hover{background:#FFFFFF33}
+
+/* ---------- Finance ---------- */
+.finance-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.money{padding:17px;background:white;border:1px solid var(--border);border-radius:14px;min-width:0}
+.money small{display:block;color:var(--muted);font-size:11px;margin-bottom:10px}
+.money strong{font-size:clamp(15px,2vw,22px);overflow-wrap:anywhere}
+.transaction{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);font-size:12px}
+.transaction small{display:block;color:var(--muted);margin-top:5px}
+.expense{color:var(--red);font-weight:800}
+.gain{color:var(--green);font-weight:800}
+
+/* ---------- Modals / chat ---------- */
+.modal-backdrop{position:fixed;inset:0;background:#0C2419A8;z-index:40;display:none;align-items:center;justify-content:center;padding:15px;backdrop-filter:blur(3px)}
+.modal-backdrop.open{display:flex}
+.modal{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--cream);border-radius:20px;padding:23px;animation:pop .2s ease}
+@keyframes pop{from{transform:translateY(12px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.modal-head h2{font-size:21px}
+.close{width:38px;height:38px;border:0;border-radius:50%;background:#E8ECE7;font-size:22px;line-height:1;flex-shrink:0;transition:background .2s}
+.close:hover{background:#DCE3DA}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chat-window{height:310px;overflow:auto;background:#F3F5F0;border-radius:12px;padding:10px;margin-bottom:12px}
+.msg{max-width:90%;padding:11px 13px;border-radius:14px;margin-bottom:10px;background:white;border:1px solid var(--border);font-size:12px;line-height:1.7;white-space:pre-wrap}
+.msg.user{margin-inline-start:auto;background:var(--green);color:white;border-color:var(--green)}
+.chat-row{display:flex;gap:8px}
+.chat-row input{flex:1;min-width:0}
+#toast{position:fixed;bottom:80px;inset-inline-end:20px;z-index:80;background:#16382B;color:white;padding:12px 17px;border-radius:12px;display:none;font-size:12px;box-shadow:0 8px 24px #0004}
+.mobile-nav{display:none}
+[dir="rtl"] .hero{text-align:right}
+
+@media(max-width:850px){
+ #auth{grid-template-columns:1fr}
+ .hero{min-height:auto;padding:25px;gap:35px}
+ .hero h1{font-size:39px}
+ html[lang="ar"] .hero h1{font-size:34px}
+ .auth-panel{padding:25px 20px}
+ .layout{grid-template-columns:1fr}
+ .sidebar{display:none}
+ .content{padding:20px 15px 95px}
+ .field-grid,.health-layout{grid-template-columns:1fr}
+ .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:20;background:#FFFFFFF5;border-top:1px solid var(--border);justify-content:space-around;padding:7px 3px calc(7px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
+ .mobile-nav button{border:0;background:transparent;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 6px;min-width:58px;border-radius:10px}
+ html[lang="ar"] .mobile-nav button{font-size:11px}
+ .mobile-nav button .ni{font-size:19px}
+ .mobile-nav button.active{color:var(--green);font-weight:800;background:#E8F0E7}
+ .topbar{height:65px;padding:0 12px}
+ .topbrand{font-size:17px}
+ #toast{bottom:90px}
+}
+@media(max-width:480px){
+ .stats{gap:7px}
+ .stat{padding:12px}
+ .stat-value{font-size:18px}
+ .stat-label{font-size:10px}
+ .stat-note{font-size:9px}
+ .view-head{align-items:flex-start;flex-direction:column}
+ .view-head>.btn{width:100%}
+ .money{padding:11px}
+ .two-col{grid-template-columns:1fr}
+ .username{display:none}
+ .logo{width:45px;height:45px}
+ .topright .btn{padding:0 11px}
+ .photo-actions{grid-template-columns:1fr}
+ #appLanguage{max-width:110px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="leaves"></canvas>
+
+<section id="auth">
+ <div class="hero">
+  <div class="brand"><img class="logo" src="leafteam-logo.jpeg" alt="LEAFTEAM"><span>LEAFTEAM</span></div>
+  <div>
+   <h1 id="hero-title" data-i18n-html="heroTitle">Better decisions.<br>Healthier fields.</h1>
+   <p id="hero-text" data-i18n="heroText">Manage your fields, monitor plant health, organize maintenance and understand your farm finances in one place.</p>
+  </div>
+  <p class="small" style="color:#FFFFFFB5" data-i18n="heroTags">Field management · Plant health · Maintenance · Finance</p>
+ </div>
+ <div class="auth-panel">
+  <div class="auth-box">
+   <h2 id="auth-title">Welcome back</h2>
+   <p id="auth-subtitle">Sign in to manage your agricultural workspace.</p>
+   <div style="margin-bottom:20px"><select id="languagePicker" onchange="setLanguage(this.value)" aria-label="Choose language"><option value="en">English</option><option value="fr">Français</option><option value="ar">العربية</option></select></div>
+   <div class="tabs"><button id="login-tab" type="button" class="tab active" onclick="showAuth('login')" data-i18n="login">Login</button><button id="signup-tab" type="button" class="tab" onclick="showAuth('signup')" data-i18n="createAccount">Create account</button></div>
+   <form id="login-form">
+    <div class="form-group"><label for="login-email" data-i18n="email">Email</label><input id="login-email" type="email" required placeholder="you@example.com" autocomplete="email"></div>
+    <div class="form-group"><label for="login-password" data-i18n="password">Password</label><input id="login-password" type="password" required placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn primary full" data-i18n="login">Login</button>
+   </form>
+   <form id="signup-form" class="hidden">
+    <div class="form-group"><label for="signup-name" data-i18n="fullName">Full name</label><input id="signup-name" required autocomplete="name"></div>
+    <div class="form-group"><label for="signup-phone" data-i18n="phone">Phone number</label><input id="signup-phone" type="tel" required autocomplete="tel"></div>
+    <div class="form-group"><label for="signup-email" data-i18n="email">Email</label><input id="signup-email" type="email" required autocomplete="email"></div>
+    <div class="form-group"><label for="signup-password" data-i18n="password">Password</label><input id="signup-password" type="password" minlength="4" required autocomplete="new-password"></div>
+    <label data-i18n="profile">Choose your profile</label>
+    <div class="roles">
+     <button type="button" class="role active" data-role="Farmer"><span>🌾</span><span data-i18n="farmer">Farmer</span></button>
+     <button type="button" class="role" data-role="Agricultural engineer"><span>🧑‍🌾</span><span data-i18n="engineer">Agricultural engineer</span></button>
+     <button type="button" class="role" data-role="Student"><span>🎓</span><span data-i18n="student">Student</span></button>
+     <button type="button" class="role" data-role="Consultant"><span>📊</span><span data-i18n="consultant">Consultant</span></button>
+     <button type="button" class="role" data-role="Researcher"><span>🔬</span><span data-i18n="researcher">Researcher</span></button>
+     <button type="button" class="role" data-role="Other"><span>✨</span><span data-i18n="other">Other</span></button>
+    </div>
+    <button class="btn primary full" data-i18n="createAccount">Create account</button>
+   </form>
+   <p class="small" style="margin-top:17px" data-i18n="localNote">Prototype: account data is stored in this browser, not on a secure server.</p>
+  </div>
+ </div>
+</section>
+
+<section id="app" class="hidden">
+ <header class="topbar">
+  <div class="topbrand"><img class="logo" src="leafteam-logo.jpeg" alt="LEAFTEAM"><span>LEAFTEAM</span></div>
+  <div class="topright">
+   <select id="appLanguage" onchange="setLanguage(this.value)" aria-label="Choose language"><option value="en">English</option><option value="fr">Français</option><option value="ar">العربية</option></select>
+   <button class="btn secondary btn-sm" onclick="openChat()"><span class="ico">✦</span><span data-i18n="askAI">Ask AI</span></button>
+   <span id="top-name" class="username small"></span>
+   <div id="avatar" class="avatar">F</div>
+   <button class="btn secondary btn-sm" onclick="logout()" data-i18n="logout">Log out</button>
+  </div>
+ </header>
+ <div class="layout">
+  <aside class="sidebar">
+   <div class="navlabel" data-i18n="workspace">WORKSPACE</div>
+   <button class="navbtn active" data-view="dashboard" onclick="navigate('dashboard')"><span class="ni">⌂</span><span data-i18n="dashboard">Dashboard</span></button>
+   <button class="navbtn" data-view="fields" onclick="navigate('fields')"><span class="ni">▦</span><span data-i18n="fields">My Fields</span></button>
+   <button class="navbtn" data-view="health" onclick="navigate('health')"><span class="ni">◉</span><span data-i18n="health">Plant Health</span></button>
+   <button class="navbtn" data-view="tasks" onclick="navigate('tasks')"><span class="ni">☑</span><span data-i18n="maintenance">Maintenance</span></button>
+   <button class="navbtn" data-view="finance" onclick="navigate('finance')"><span class="ni">↗</span><span data-i18n="finance">Farm Finance</span></button>
+  </aside>
+
+  <main class="content">
+   <section class="view active" id="view-dashboard">
+    <div class="view-head"><div><h1><span data-i18n="welcome">Welcome</span>, <span id="dash-name"></span></h1><p data-i18n="dashboardIntro">Your fields, cultivation dates and daily work.</p></div><button class="btn primary" onclick="openFieldModal()"><span class="ico">＋</span><span data-i18n="addField">Add field</span></button></div>
+    <div class="stats">
+     <div class="stat"><div class="stat-label" data-i18n="myFields">My fields</div><div id="stat-fields" class="stat-value">0</div><div class="stat-note" data-i18n="registeredFields">Registered fields</div></div>
+     <div class="stat"><div class="stat-label" data-i18n="totalArea">Total area</div><div id="stat-area" class="stat-value">0 m²</div><div id="stat-hectares" class="stat-note">0 hectares</div></div>
+     <div class="stat"><div class="stat-label" data-i18n="openTasks">Open tasks</div><div id="stat-tasks" class="stat-value">0</div><div class="stat-note" data-i18n="acrossFields">Across all fields</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><div><h3 data-i18n="yourFields">Your fields</h3><p data-i18n="fieldIntro">Each field has its own analysis and maintenance list.</p></div><button class="btn secondary btn-sm" onclick="navigate('fields')" data-i18n="viewAll">View all</button></div><div id="dashboard-fields" class="field-grid"></div></div>
+    <div class="panel"><div class="panel-head"><h3 data-i18n="quickActions">Quick actions</h3></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" onclick="openFieldModal()"><span class="ico">＋</span><span data-i18n="addField">Add field</span></button><button class="btn secondary" onclick="navigate('health')"><span class="ico">📷</span><span data-i18n="inspectPlant">Inspect a plant</span></button><button class="btn secondary" onclick="navigate('finance')"><span class="ico">💰</span><span data-i18n="recordTransaction">Record transaction</span></button><button class="btn secondary" onclick="openChat()"><span class="ico">✦</span><span data-i18n="askAI">Ask AI</span></button></div></div>
+   </section>
+
+   <section class="view" id="view-fields">
+    <div class="view-head"><div><h1 data-i18n="fields">My Fields</h1><p data-i18n="fieldIntro">Manage each field independently.</p></div><button class="btn primary" onclick="openFieldModal()"><span class="ico">＋</span><span data-i18n="addField">Add field</span></button></div>
+    <div id="fields-grid" class="field-grid"></div>
+   </section>
+
+   <section class="view" id="view-health">
+    <div class="view-head"><div><h1 data-i18n="health">Plant Health</h1><p data-i18n="healthIntro">Upload a plant photo to prepare an inspection report.</p></div></div>
+    <div class="health-layout">
+     <div class="panel">
+      <div class="panel-head"><h3 data-i18n="inspectPlant">Inspect a plant</h3></div>
+      <div class="dropzone">
+       <div class="dz-icon">📷</div>
+       <p class="small" data-i18n="photoHint">Take a photo or choose an image.</p>
+       <div class="photo-actions">
+        <button type="button" class="btn primary" onclick="openCamera()"><span class="ico">📸</span><span data-i18n="takePhoto">Take a photo</span></button>
+        <button type="button" class="btn secondary" onclick="$('photo-input').click()"><span class="ico">🖼️</span><span data-i18n="chooseImage">Choose an image</span></button>
+        <input id="photo-input" type="file" accept="image/*">
+        <input id="photo-capture" type="file" accept="image/*" capture="environment">
+       </div>
+       <div id="preview-wrap" class="preview-wrap hidden"><img id="photo-preview" class="preview" alt="Plant preview"><button type="button" class="preview-remove" onclick="removePhoto()" aria-label="Remove">×</button></div>
+      </div>
+      <div class="form-group" style="margin-top:15px"><label for="health-field" data-i18n="relatedField">Related field</label><select id="health-field"></select></div>
+      <div class="form-group"><label for="symptoms" data-i18n="symptoms">Observed symptoms</label><textarea id="symptoms" placeholder="Spots, yellowing, wilting..."></textarea></div>
+      <button class="btn primary full" onclick="analysePlant()" data-i18n="prepareReport">Prepare report</button>
+     </div>
+     <div class="panel"><div class="panel-head"><h3 data-i18n="inspectionReport">Inspection report</h3></div><div id="diagnosis" class="result"><h3 data-i18n="waitingInspection">Waiting for inspection</h3><span data-i18n="uploadHint">Upload a photo and describe the symptoms.</span></div><p class="small" style="margin-top:12px" data-i18n="safetyNote">This prototype cannot reliably diagnose plant diseases. Confirm findings with a qualified agronomist before applying treatment.</p><button class="btn secondary full" style="margin-top:14px" onclick="printReport()"><span class="ico">🖨️</span><span data-i18n="savePDF">Print / Save PDF</span></button></div>
+    </div>
+   </section>
+
+   <section class="view" id="view-tasks">
+    <div class="view-head"><div><h1 data-i18n="maintenance">Maintenance</h1><p data-i18n="taskIntro">Tasks belong to individual fields. You can complete or delete them.</p></div><button class="btn primary" onclick="chooseTaskField()"><span class="ico">＋</span><span data-i18n="addTask">Add task</span></button></div>
+    <div id="all-tasks"></div>
+   </section>
+
+   <section class="view" id="view-finance">
+    <div class="view-head"><div><h1 data-i18n="finance">Farm Finance</h1><p data-i18n="financeIntro">Record expenses and gains.</p></div></div>
+    <div class="finance-stats"><div class="money"><small data-i18n="expenses">Expenses</small><strong id="expense-total">0 MAD</strong></div><div class="money"><small data-i18n="gains">Gains</small><strong id="gain-total">0 MAD</strong></div><div class="money"><small data-i18n="netBalance">Net balance</small><strong id="net-total">0 MAD</strong></div></div>
+    <div class="health-layout">
+     <div class="panel"><div class="panel-head"><h3 data-i18n="recordTransaction">Record transaction</h3></div><form id="finance-form">
+      <div class="form-group"><label for="money-type" data-i18n="type">Type</label><select id="money-type"><option value="expense" data-i18n="expense">Expense</option><option value="gain" data-i18n="gain">Gain / income</option></select></div>
+      <div class="form-group"><label for="money-amount" data-i18n="amount">Amount (MAD)</label><input id="money-amount" type="number" min=".01" step=".01" required inputmode="decimal"></div>
+      <div class="form-group"><label for="money-desc" data-i18n="description">Description</label><input id="money-desc" required></div>
+      <div class="form-group"><label for="money-field" data-i18n="relatedField">Related field</label><select id="money-field"></select></div>
+      <button class="btn primary full" data-i18n="saveTransaction">Save transaction</button>
+     </form></div>
+     <div class="panel"><div class="panel-head"><h3 data-i18n="financialInsight">Financial insight</h3></div><div id="finance-insight" class="result">Record transactions to see a summary.</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3 data-i18n="transactions">Transactions</h3></div><div id="finance-list"></div></div>
+   </section>
+  </main>
+ </div>
+ <nav class="mobile-nav">
+  <button class="active" data-view="dashboard" onclick="navigate('dashboard')"><span class="ni">⌂</span><span data-i18n="dashboard">Home</span></button>
+  <button data-view="fields" onclick="navigate('fields')"><span class="ni">▦</span><span data-i18n="fields">Fields</span></button>
+  <button data-view="health" onclick="navigate('health')"><span class="ni">◉</span><span data-i18n="health">Health</span></button>
+  <button data-view="tasks" onclick="navigate('tasks')"><span class="ni">☑</span><span data-i18n="maintenance">Tasks</span></button>
+  <button data-view="finance" onclick="navigate('finance')"><span class="ni">↗</span><span data-i18n="finance">Finance</span></button>
+ </nav>
+</section>
+
+<div class="modal-backdrop" id="field-modal"><div class="modal">
+ <div class="modal-head"><h2 id="field-modal-title" data-i18n="addField">Add field</h2><button type="button" class="close" onclick="closeModal('field-modal')" aria-label="Close">×</button></div>
+ <form id="field-form"><input id="field-edit-id" type="hidden">
+  <div class="form-group"><label for="field-name" data-i18n="fieldName">Field name</label><input id="field-name" required></div>
+  <div class="form-group"><label for="field-area" data-i18n="areaM2">Area (m²)</label><input id="field-area" type="number" min="1" required inputmode="decimal"></div>
+  <div class="form-group"><label for="field-location" data-i18n="location">Location / address</label><input id="field-location" required placeholder="Beni Mellal, Morocco"></div>
+  <div class="form-group"><label>Dessiner la parcelle : cliquez chaque coin sur la carte</label><div id="field-map" class="map" role="application" aria-label="Interactive field map"></div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button type="button" class="btn secondary" onclick="useGPS()"><span class="ico">📍</span><span data-i18n="useGPS">Use my GPS location</span></button><button type="button" class="btn secondary" onclick="undoParcelPoint()">↶ Annuler le dernier coin</button><button type="button" class="btn secondary" onclick="clearParcel()">✕ Effacer</button></div><p id="map-coordinates" class="small" style="margin-top:6px">Cliquez au moins 3 coins. Les carrés pointillés sont les pixels GAEZ (≈ 1 km).</p></div>
+  <div class="form-group"><label for="field-irrigation">Irrigation</label><select id="field-irrigation"><option value="non">Non : culture pluviale</option><option value="oui">Oui : parcelle irriguée</option></select></div>
+  <div class="two-col">
+   <div class="form-group"><label for="field-crop" data-i18n="plannedCrop">Planned crop</label><select id="field-crop" required><option value="">Select crop</option><option>Wheat</option><option>Barley</option><option>Chickpeas</option><option>Lentils</option><option>Beans</option><option>Potatoes</option><option>Onions</option><option>Tomatoes</option><option>Maize</option><option>Other annual crop</option></select></div>
+   <div class="form-group"><label for="field-start" data-i18n="startDate">Cultivation start date</label><input id="field-start" type="date" required></div>
+  </div>
+  <div class="form-group"><label for="field-notes" data-i18n="notes">Notes</label><textarea id="field-notes"></textarea></div>
+  <button class="btn primary full" data-i18n="saveField">Save field</button>
+ </form>
+</div></div>
+
+<div class="modal-backdrop" id="task-modal"><div class="modal">
+ <div class="modal-head"><h2 data-i18n="addTask">Add task</h2><button type="button" class="close" onclick="closeModal('task-modal')" aria-label="Close">×</button></div>
+ <form id="task-form"><div class="form-group"><label for="task-field" data-i18n="relatedField">Field</label><select id="task-field" required></select></div>
+ <div class="form-group"><label for="task-name" data-i18n="taskDescription">Task description</label><input id="task-name" required></div>
+ <div class="two-col"><div class="form-group"><label for="task-date" data-i18n="dueDate">Due date</label><input id="task-date" type="date" required></div><div class="form-group"><label for="task-priority" data-i18n="priority">Priority</label><select id="task-priority"><option>Normal</option><option>High</option><option>Urgent</option><option>Low</option></select></div></div>
+ <button class="btn primary full" data-i18n="saveTask">Save task</button></form>
+</div></div>
+
+<div class="modal-backdrop" id="chat-modal"><div class="modal">
+ <div class="modal-head"><div><h2 data-i18n="assistant">LEAF AI Assistant</h2><p class="small" data-i18n="assistantNote">Agricultural support prototype</p></div><button type="button" class="close" onclick="closeModal('chat-modal')" aria-label="Close">×</button></div>
+ <div id="chat-messages" class="chat-window"><div class="msg" data-i18n="assistantWelcome">Ask about field organization, maintenance or financial records.</div></div>
+ <div class="chat-row"><input id="chat-input" placeholder="Ask a question..." onkeydown="if(event.key==='Enter')sendChat()"><button class="btn primary" onclick="sendChat()" data-i18n="send">Send</button></div>
+ <p class="small" style="margin-top:10px" data-i18n="demoAI">This demo uses sample responses, not a connected AI model.</p>
+</div></div>
+
+<div class="modal-backdrop camera-modal" id="camera-modal"><div class="modal">
+ <div class="modal-head"><h2 data-i18n="cameraTitle">Take a plant photo</h2><button type="button" class="close" onclick="closeCamera()" aria-label="Close">×</button></div>
+ <div id="camera-error" class="camera-error hidden"></div>
+ <div class="camera-stage"><video id="camera-video" playsinline muted autoplay></video></div>
+ <canvas id="camera-canvas" class="hidden"></canvas>
+ <div class="camera-controls">
+  <button type="button" class="btn" onclick="switchCamera()"><span class="ico">🔄</span><span data-i18n="switchCamera">Flip</span></button>
+  <button type="button" class="shutter" onclick="captureFrame()" aria-label="Capture"><span></span></button>
+  <button type="button" class="btn" onclick="closeCamera()" data-i18n="cancel">Cancel</button>
+ </div>
+ <p class="small" style="margin-top:12px;color:#FFFFFFAA;text-align:center" data-i18n="cameraHint">Place the affected leaf in the frame, in good light.</p>
+</div></div>
+
+<div id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+
+const T = {
+  en: {
+    heroTitle: "Better decisions.<br>Healthier fields.",
+    heroText: "Manage your fields, monitor plant health, organize maintenance and understand your farm finances in one place.",
+    heroTags: "Field management · Plant health · Maintenance · Finance",
+    login: "Login", createAccount: "Create account",
+    email: "Email", password: "Password", fullName: "Full name",
+    phone: "Phone number", profile: "Choose your profile",
+    farmer: "Farmer", engineer: "Agricultural engineer",
+    student: "Student", consultant: "Consultant",
+    researcher: "Researcher", other: "Other",
+    localNote: "Prototype: account data is stored in this browser, not on a secure server.",
+    workspace: "WORKSPACE", dashboard: "Dashboard",
+    fields: "My Fields", health: "Plant Health",
+    maintenance: "Maintenance", finance: "Farm Finance",
+    addField: "Add field", welcome: "Welcome",
+    dashboardIntro: "Your fields, cultivation dates and daily work.",
+    myFields: "My fields", registeredFields: "Registered fields",
+    totalArea: "Total area", openTasks: "Open tasks",
+    acrossFields: "Across all fields", yourFields: "Your fields",
+    fieldIntro: "Each field has its own analysis and maintenance list.",
+    viewAll: "View all", quickActions: "Quick actions",
+    inspectPlant: "Inspect a plant", recordTransaction: "Record transaction",
+    askAI: "Ask AI",
+    healthIntro: "Upload a plant photo to prepare an inspection report.",
+    photoHint: "Take a photo or choose an image.",
+    relatedField: "Related field", symptoms: "Observed symptoms",
+    prepareReport: "Prepare report", inspectionReport: "Inspection report",
+    waitingInspection: "Waiting for inspection",
+    uploadHint: "Upload a photo and describe the symptoms.",
+    safetyNote: "This prototype cannot reliably diagnose plant diseases. Confirm findings with a qualified agronomist before applying treatment.",
+    savePDF: "Print / Save PDF",
+    taskIntro: "Tasks belong to individual fields. You can complete or delete them.",
+    addTask: "Add task",
+    financeIntro: "Record expenses and gains.",
+    expenses: "Expenses", gains: "Gains", netBalance: "Net balance",
+    type: "Type", expense: "Expense", gain: "Gain / income",
+    amount: "Amount (MAD)", description: "Description",
+    saveTransaction: "Save transaction",
+    financialInsight: "Financial insight", transactions: "Transactions",
+    fieldName: "Field name", areaM2: "Area (m²)",
+    location: "Location / address", pickMap: "Select location on map",
+    useGPS: "Use my GPS location", plannedCrop: "Planned crop",
+    startDate: "Cultivation start date", notes: "Notes",
+    saveField: "Save field", taskDescription: "Task description",
+    dueDate: "Due date", priority: "Priority", saveTask: "Save task",
+    assistant: "LEAF AI Assistant",
+    assistantNote: "Agricultural support prototype",
+    assistantWelcome: "Ask about field organization, maintenance or financial records.",
+    assistantPlaceholder: "Ask a question...", send: "Send",
+    demoAI: "This demo uses sample responses, not a connected AI model.",
+    logout: "Log out", startAnalysis: "Start Analysis",
+    edit: "Edit", delete: "Delete", tasks: "Maintenance tasks",
+    noFields: "No fields registered yet",
+    addFirst: "Add your first field to get started.",
+    noTasks: "No tasks for this field yet.",
+    analysisStarted: "Analysis started", notAnalysed: "Not analysed",
+    area: "Area", crop: "Crop", cultivationStart: "Cultivation start",
+    open: "Open tasks", editField: "Edit field",
+    deleteField: "Delete field",
+    deleteConfirm: "Delete this field and all its tasks?",
+    deleteTaskConfirm: "Delete this task?",
+    noTransactions: "No transactions recorded yet.",
+    netNegative: "Your recorded expenses exceed your gains by",
+    netPositive: "Your recorded gains exceed your expenses by",
+    noFinance: "Record expenses and gains to see a financial summary.",
+    reportTitle: "Preliminary inspection report",
+    nextSteps: "Recommended next steps",
+    reportLimit: "This is a sample report, not an AI diagnosis.",
+    field: "Field", symptomProvided: "Symptoms provided",
+    taskAdded: "Task added", fieldAdded: "Field added",
+    fieldUpdated: "Field updated", fieldDeleted: "Field deleted",
+    taskDeleted: "Task deleted", transactionSaved: "Transaction recorded",
+    noFieldTasks: "No maintenance tasks for this field.",
+    general: "General", date: "Date", welcomeBack: "Welcome back",
+    signInText: "Sign in to manage your agricultural workspace.",
+    signupText: "Set up your profile to personalize your workspace.",
+    takePhoto: "Take a photo", chooseImage: "Choose an image",
+    cameraTitle: "Take a plant photo", switchCamera: "Flip",
+    cancel: "Cancel",
+    cameraHint: "Place the affected leaf in the frame, in good light.",
+    cameraDenied: "Camera access was denied. Allow the camera in your browser settings, or choose an image instead.",
+    cameraUnavailable: "No camera available on this device. Choose an image instead.",
+    photoAdded: "Photo added", photoLabel: "Photo"
+  },
+
+  fr: {
+    heroTitle: "Mieux décider.<br>Des parcelles en meilleure santé.",
+    heroText: "Gérez vos parcelles, suivez la santé des plantes, organisez l'entretien et comprenez vos finances agricoles au même endroit.",
+    heroTags: "Gestion des parcelles · Santé des plantes · Entretien · Finances",
+    login: "Connexion", createAccount: "Créer un compte",
+    email: "E-mail", password: "Mot de passe",
+    fullName: "Nom complet", phone: "Téléphone",
+    profile: "Choisissez votre profil",
+    farmer: "Agriculteur", engineer: "Ingénieur agronome",
+    student: "Étudiant", consultant: "Consultant",
+    researcher: "Chercheur", other: "Autre",
+    localNote: "Prototype : les données sont stockées dans ce navigateur, pas sur un serveur sécurisé.",
+    workspace: "ESPACE DE TRAVAIL", dashboard: "Tableau de bord",
+    fields: "Mes parcelles", health: "Santé des plantes",
+    maintenance: "Entretien", finance: "Finances agricoles",
+    addField: "Ajouter une parcelle", welcome: "Bienvenue",
+    dashboardIntro: "Vos parcelles, dates de culture et tâches quotidiennes.",
+    myFields: "Mes parcelles", registeredFields: "Parcelles enregistrées",
+    totalArea: "Surface totale", openTasks: "Tâches ouvertes",
+    acrossFields: "Toutes les parcelles", yourFields: "Vos parcelles",
+    fieldIntro: "Chaque parcelle possède sa propre analyse et sa liste de tâches.",
+    viewAll: "Tout voir", quickActions: "Actions rapides",
+    inspectPlant: "Inspecter une plante",
+    recordTransaction: "Enregistrer une transaction",
+    askAI: "Demander à l'IA",
+    healthIntro: "Ajoutez une photo pour préparer un rapport d'inspection.",
+    photoHint: "Prenez une photo ou choisissez une image.",
+    relatedField: "Parcelle associée", symptoms: "Symptômes observés",
+    prepareReport: "Préparer le rapport",
+    inspectionReport: "Rapport d'inspection",
+    waitingInspection: "En attente d'inspection",
+    uploadHint: "Ajoutez une photo et décrivez les symptômes.",
+    safetyNote: "Ce prototype ne peut pas diagnostiquer fiablement les maladies. Confirmez les résultats avec un agronome qualifié avant tout traitement.",
+    savePDF: "Imprimer / Enregistrer PDF",
+    taskIntro: "Les tâches appartiennent à chaque parcelle. Vous pouvez les terminer ou les supprimer.",
+    addTask: "Ajouter une tâche",
+    financeIntro: "Enregistrez les dépenses et les revenus.",
+    expenses: "Dépenses", gains: "Revenus",
+    netBalance: "Solde net", type: "Type",
+    expense: "Dépense", gain: "Revenu",
+    amount: "Montant (MAD)", description: "Description",
+    saveTransaction: "Enregistrer",
+    financialInsight: "Analyse financière",
+    transactions: "Transactions",
+    fieldName: "Nom de la parcelle", areaM2: "Surface (m²)",
+    location: "Localisation / adresse",
+    pickMap: "Choisir sur la carte",
+    useGPS: "Utiliser ma position GPS",
+    plannedCrop: "Culture prévue",
+    startDate: "Date de début de culture",
+    notes: "Notes", saveField: "Enregistrer la parcelle",
+    taskDescription: "Description de la tâche",
+    dueDate: "Date limite", priority: "Priorité",
+    saveTask: "Enregistrer la tâche",
+    assistant: "Assistant IA LEAF",
+    assistantNote: "Prototype d'assistance agricole",
+    assistantWelcome: "Posez une question sur les parcelles, l'entretien ou les finances.",
+    assistantPlaceholder: "Posez une question...",
+    send: "Envoyer",
+    demoAI: "Cette démo utilise des réponses prédéfinies, sans modèle IA connecté.",
+    logout: "Déconnexion", startAnalysis: "Lancer l'analyse",
+    edit: "Modifier", delete: "Supprimer",
+    tasks: "Tâches d'entretien",
+    noFields: "Aucune parcelle enregistrée",
+    addFirst: "Ajoutez votre première parcelle pour commencer.",
+    noTasks: "Aucune tâche pour cette parcelle.",
+    analysisStarted: "Analyse lancée",
+    notAnalysed: "Non analysée",
+    area: "Surface", crop: "Culture",
+    cultivationStart: "Début de culture",
+    open: "Tâches ouvertes",
+    editField: "Modifier", deleteField: "Supprimer la parcelle",
+    deleteConfirm: "Supprimer cette parcelle et toutes ses tâches ?",
+    deleteTaskConfirm: "Supprimer cette tâche ?",
+    noTransactions: "Aucune transaction enregistrée.",
+    netNegative: "Vos dépenses dépassent vos revenus de",
+    netPositive: "Vos revenus dépassent vos dépenses de",
+    noFinance: "Enregistrez les dépenses et revenus pour obtenir un résumé.",
+    reportTitle: "Rapport d'inspection préliminaire",
+    nextSteps: "Étapes recommandées",
+    reportLimit: "Ceci est un exemple de rapport, pas un diagnostic IA.",
+    field: "Parcelle", symptomProvided: "Symptômes indiqués",
+    taskAdded: "Tâche ajoutée", fieldAdded: "Parcelle ajoutée",
+    fieldUpdated: "Parcelle modifiée",
+    fieldDeleted: "Parcelle supprimée",
+    taskDeleted: "Tâche supprimée",
+    transactionSaved: "Transaction enregistrée",
+    noFieldTasks: "Aucune tâche pour cette parcelle.",
+    general: "Général", date: "Date",
+    welcomeBack: "Bon retour",
+    signInText: "Connectez-vous pour gérer votre espace agricole.",
+    signupText: "Créez votre profil pour personnaliser votre espace.",
+    takePhoto: "Prendre une photo",
+    chooseImage: "Choisir une image",
+    cameraTitle: "Photographier la plante",
+    switchCamera: "Inverser",
+    cancel: "Annuler",
+    cameraHint: "Cadrez la feuille touchée, avec une bonne lumière.",
+    cameraDenied: "L'accès à la caméra a été refusé. Autorisez-la dans les paramètres du navigateur, ou choisissez une image.",
+    cameraUnavailable: "Aucune caméra disponible sur cet appareil. Choisissez une image.",
+    photoAdded: "Photo ajoutée", photoLabel: "Photo"
+  },
+
+  ar: {
+    heroTitle: "قرارات أفضل.<br>حقول أكثر صحة.",
+    heroText: "أدر حقولك، وتابع صحة النباتات، ونظّم الصيانة، وافهم مالية مزرعتك في مكان واحد.",
+    heroTags: "إدارة الحقول · صحة النباتات · الصيانة · المالية",
+    login: "تسجيل الدخول", createAccount: "إنشاء حساب",
+    email: "البريد الإلكتروني", password: "كلمة المرور",
+    fullName: "الاسم الكامل", phone: "رقم الهاتف",
+    profile: "اختر نوع الحساب",
+    farmer: "مزارع", engineer: "مهندس زراعي",
+    student: "طالب", consultant: "مستشار",
+    researcher: "باحث", other: "آخر",
+    localNote: "نسخة تجريبية: تُحفظ البيانات في هذا المتصفح وليس على خادم آمن.",
+    workspace: "مساحة العمل", dashboard: "لوحة التحكم",
+    fields: "حقولي", health: "صحة النباتات",
+    maintenance: "الصيانة", finance: "المالية الزراعية",
+    addField: "إضافة حقل", welcome: "مرحباً",
+    dashboardIntro: "حقولك ومواعيد الزراعة والمهام اليومية.",
+    myFields: "حقولي", registeredFields: "الحقول المسجلة",
+    totalArea: "المساحة الإجمالية", openTasks: "المهام المفتوحة",
+    acrossFields: "في جميع الحقول", yourFields: "حقولك",
+    fieldIntro: "لكل حقل تحليل خاص وقائمة مهام مستقلة.",
+    viewAll: "عرض الكل", quickActions: "إجراءات سريعة",
+    inspectPlant: "فحص نبتة",
+    recordTransaction: "تسجيل معاملة",
+    askAI: "اسأل الذكاء الاصطناعي",
+    healthIntro: "ارفع صورة للنبتة لإعداد تقرير فحص.",
+    photoHint: "التقط صورة أو اختر صورة من جهازك.",
+    relatedField: "الحقل المرتبط",
+    symptoms: "الأعراض الملحوظة",
+    prepareReport: "إعداد التقرير",
+    inspectionReport: "تقرير الفحص",
+    waitingInspection: "في انتظار الفحص",
+    uploadHint: "ارفع صورة واشرح الأعراض.",
+    safetyNote: "هذه نسخة تجريبية ولا تستطيع تشخيص الأمراض بدقة. استشر مهندساً زراعياً قبل استخدام أي علاج.",
+    savePDF: "طباعة / حفظ PDF",
+    taskIntro: "تتبع المهام كل حقل على حدة ويمكنك إكمالها أو حذفها.",
+    addTask: "إضافة مهمة",
+    financeIntro: "سجل المصاريف والمداخيل.",
+    expenses: "المصاريف", gains: "المداخيل",
+    netBalance: "الرصيد الصافي", type: "النوع",
+    expense: "مصروف", gain: "دخل",
+    amount: "المبلغ (درهم)", description: "الوصف",
+    saveTransaction: "حفظ المعاملة",
+    financialInsight: "التحليل المالي",
+    transactions: "المعاملات",
+    fieldName: "اسم الحقل", areaM2: "المساحة (م²)",
+    location: "الموقع / العنوان",
+    pickMap: "حدد الموقع على الخريطة",
+    useGPS: "استخدام موقعي الحالي",
+    plannedCrop: "المحصول المخطط",
+    startDate: "تاريخ بداية الزراعة",
+    notes: "ملاحظات", saveField: "حفظ الحقل",
+    taskDescription: "وصف المهمة",
+    dueDate: "تاريخ الاستحقاق",
+    priority: "الأولوية", saveTask: "حفظ المهمة",
+    assistant: "مساعد LEAF الذكي",
+    assistantNote: "نموذج أولي للمساعدة الزراعية",
+    assistantWelcome: "اسأل عن الحقول أو الصيانة أو الحسابات المالية.",
+    assistantPlaceholder: "اكتب سؤالك...",
+    send: "إرسال",
+    demoAI: "هذه النسخة تستخدم ردوداً تجريبية ولا تتصل بنموذج ذكاء اصطناعي.",
+    logout: "تسجيل الخروج",
+    startAnalysis: "بدء التحليل",
+    edit: "تعديل", delete: "حذف",
+    tasks: "مهام الصيانة",
+    noFields: "لا توجد حقول مسجلة",
+    addFirst: "أضف حقلك الأول للبدء.",
+    noTasks: "لا توجد مهام لهذا الحقل.",
+    analysisStarted: "بدأ التحليل",
+    notAnalysed: "لم يتم التحليل",
+    area: "المساحة", crop: "المحصول",
+    cultivationStart: "بداية الزراعة",
+    open: "المهام المفتوحة",
+    editField: "تعديل الحقل",
+    deleteField: "حذف الحقل",
+    deleteConfirm: "هل تريد حذف هذا الحقل وجميع مهامه؟",
+    deleteTaskConfirm: "هل تريد حذف هذه المهمة؟",
+    noTransactions: "لا توجد معاملات مسجلة.",
+    netNegative: "المصاريف المسجلة أكبر من المداخيل بمقدار",
+    netPositive: "المداخيل المسجلة أكبر من المصاريف بمقدار",
+    noFinance: "سجل المصاريف والمداخيل لعرض الملخص.",
+    reportTitle: "تقرير فحص أولي",
+    nextSteps: "الخطوات الموصى بها",
+    reportLimit: "هذا تقرير تجريبي وليس تشخيصاً بالذكاء الاصطناعي.",
+    field: "الحقل", symptomProvided: "الأعراض المدخلة",
+    taskAdded: "تمت إضافة المهمة",
+    fieldAdded: "تمت إضافة الحقل",
+    fieldUpdated: "تم تعديل الحقل",
+    fieldDeleted: "تم حذف الحقل",
+    taskDeleted: "تم حذف المهمة",
+    transactionSaved: "تم تسجيل المعاملة",
+    noFieldTasks: "لا توجد مهام لهذا الحقل.",
+    general: "عام", date: "التاريخ",
+    welcomeBack: "مرحباً بعودتك",
+    signInText: "سجل الدخول لإدارة مساحة عملك الزراعية.",
+    signupText: "أنشئ ملفك الشخصي لتخصيص مساحة العمل.",
+    takePhoto: "التقاط صورة",
+    chooseImage: "اختيار صورة",
+    cameraTitle: "تصوير النبتة",
+    switchCamera: "قلب الكاميرا",
+    cancel: "إلغاء",
+    cameraHint: "ضع الورقة المصابة داخل الإطار مع إضاءة جيدة.",
+    cameraDenied: "تم رفض الوصول إلى الكاميرا. اسمح بها من إعدادات المتصفح أو اختر صورة بدلاً من ذلك.",
+    cameraUnavailable: "لا توجد كاميرا متاحة على هذا الجهاز. اختر صورة بدلاً من ذلك.",
+    photoAdded: "تمت إضافة الصورة",
+    photoLabel: "الصورة"
+  }
+};
+
+// ==========================================
+// CONFIGURATION
+// ==========================================
+
+const LEAF_API_BASE = "http://127.0.0.1:8000";
+
+let lang = localStorage.getItem("leaf-language") || "en";
+
+const LEAF_CONFIG = {
+  satelliteTileUrl:
+    "https://api.maptiler.com/maps/hybrid-v4/256/{z}/{x}/{y}.png?key=F4w0tw8heYG2b3RiXvOy",
+  satelliteAttribution: "© MapTiler © OpenStreetMap contributors"
+};
+
+let leafMap = null;
+let leafMarker = null;
+let leafTileLayers = null;
+
+let user = null;
+let fields = [];
+let transactions = [];
+let selectedRole = "Farmer";
+let plantImage = null;
+let plantImageUrl = null;
+let mapSelection = null;
+
+let camStream = null;
+let camFacing = "environment";
+
+const $ = id => document.getElementById(id);
+
+const tr = k =>
+  (T[lang] && T[lang][k]) || T.en[k] || k;
+
+const plus = `<span class="ico">＋</span>`;
+
+const esc = v =>
+  String(v ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c])
+  );
+
+const uid = () =>
+  Date.now().toString(36) +
+  Math.random().toString(36).slice(2, 7);
+
+const money = n =>
+  Number(n || 0).toLocaleString(
+    undefined,
+    { maximumFractionDigits: 2 }
+  ) + " MAD";
+
+const dateText = d =>
+  d
+    ? new Date(d + "T12:00:00").toLocaleDateString(
+        lang === "ar" ? "ar-MA" :
+        lang === "fr" ? "fr-FR" : "en-GB",
+        { day: "numeric", month: "short", year: "numeric" }
+      )
+    : "—";
+
+// ==========================================
+// LANGUAGE
+// ==========================================
+
+function setLanguage(value) {
+  lang = T[value] ? value : "en";
+
+  localStorage.setItem("leaf-language", lang);
+
+  document.documentElement.lang = lang;
+  document.documentElement.dir =
+    lang === "ar" ? "rtl" : "ltr";
+
+  $("languagePicker").value = lang;
+  $("appLanguage").value = lang;
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const k = el.dataset.i18n;
+    if (tr(k)) el.textContent = tr(k);
+  });
+
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    el.innerHTML = tr(el.dataset.i18nHtml);
+  });
+
+  $("chat-input").placeholder = tr("assistantPlaceholder");
+
+  $("auth-title").textContent = tr(
+    $("signup-form").classList.contains("hidden")
+      ? "welcomeBack"
+      : "createAccount"
+  );
+
+  $("auth-subtitle").textContent = tr(
+    $("signup-form").classList.contains("hidden")
+      ? "signInText"
+      : "signupText"
+  );
+
+  renderAll();
+}
+
+// ==========================================
+// MODALS / NOTIFICATIONS
+// ==========================================
+
+function toast(msg) {
+  const t = $("toast");
+
+  t.textContent = msg;
+  t.style.display = "block";
+
+  clearTimeout(toast._t);
+
+  toast._t = setTimeout(
+    () => t.style.display = "none",
+    2400
+  );
+}
+
+function openModal(id) {
+  $(id).classList.add("open");
+}
+
+function closeModal(id) {
+  $(id).classList.remove("open");
+}
+
+document.querySelectorAll(".modal-backdrop").forEach(m => {
+  m.addEventListener("click", e => {
+    if (e.target === m) {
+      if (m.id === "camera-modal") stopCamera();
+      m.classList.remove("open");
+    }
+  });
+});
+
+addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    if ($("camera-modal").classList.contains("open")) {
+      closeCamera();
+    }
+
+    document.querySelectorAll(
+      ".modal-backdrop.open"
+    ).forEach(m => m.classList.remove("open"));
+  }
+});
+
+// ==========================================
+// AUTHENTICATION PROTOTYPE
+// ==========================================
+
+function showAuth(mode) {
+  const signup = mode === "signup";
+
+  $("signup-form").classList.toggle("hidden", !signup);
+  $("login-form").classList.toggle("hidden", signup);
+
+  $("login-tab").classList.toggle("active", !signup);
+  $("signup-tab").classList.toggle("active", signup);
+
+  $("auth-title").textContent =
+    tr(signup ? "createAccount" : "welcomeBack");
+
+  $("auth-subtitle").textContent =
+    tr(signup ? "signupText" : "signInText");
+}
+
+document.querySelectorAll(".role").forEach(b => {
+  b.addEventListener("click", () => {
+    selectedRole = b.dataset.role;
+
+    document.querySelectorAll(".role").forEach(x => {
+      x.classList.toggle("active", x === b);
+    });
+  });
+});
+
+function enterApp(profile) {
+  user = profile;
+
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+
+  $("top-name").textContent = user.name;
+  $("dash-name").textContent = user.name.split(" ")[0];
+
+  $("avatar").textContent =
+    user.name.trim().charAt(0).toUpperCase();
+
+  renderAll();
+  setLanguage(lang);
+}
+
+$("signup-form").addEventListener("submit", e => {
+  e.preventDefault();
+
+  user = {
+    name: $("signup-name").value.trim(),
+    phone: $("signup-phone").value.trim(),
+    email: $("signup-email").value.trim(),
+    role: selectedRole
+  };
+
+  localStorage.setItem("leaf-user", JSON.stringify(user));
+
+  enterApp(user);
+  toast(tr("welcome"));
+});
+
+$("login-form").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const saved = JSON.parse(
+    localStorage.getItem("leaf-user") || "null"
+  );
+
+  const email = $("login-email").value.trim();
+
+  if (
+    saved &&
+    saved.email.toLowerCase() === email.toLowerCase()
+  ) {
+    enterApp(saved);
+  } else {
+    enterApp({
+      name: email.split("@")[0] || "Farmer",
+      email,
+      role: "Farmer"
+    });
+
+    toast("Demo login");
+  }
+});
+
+function logout() {
+  user = null;
+  stopCamera();
+
+  $("app").classList.add("hidden");
+  $("auth").classList.remove("hidden");
+
+  showAuth("login");
+}
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+
+function navigate(view, saveHistory = true) {
+  const page = document.getElementById("view-" + view);
+
+  if (!page) return;
+
+  if (saveHistory && location.hash !== "#" + view) {
+    history.pushState(
+      { view: view },
+      "",
+      "#" + view
+    );
+  }
+
+  document.querySelectorAll(".view").forEach(element => {
+    element.classList.remove("active");
+  });
+
+  page.classList.add("active");
+
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.classList.toggle(
+      "active",
+      button.dataset.view === view
+    );
+  });
+
+  window.scrollTo(0, 0);
+}
+
+window.addEventListener("popstate", function(event) {
+  const view =
+    event.state?.view ||
+    location.hash.replace("#", "") ||
+    "dashboard";
+
+  navigate(view, false);
+});
+
+// ==========================================
+// MAP / GPS
+// ==========================================
+
+function initializeFieldMap() {
+  if (typeof L === "undefined") {
+    $("map-coordinates").textContent =
+      "Leaflet unavailable. Check your internet connection.";
+    return;
+  }
+
+  if (!leafMap) {
+    leafMap = L.map("field-map").setView(
+      [32.34, -6.36],
+      10
+    );
+
+    const osm = L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }
+    ).addTo(leafMap);
+
+    const layers = {
+      "OpenStreetMap": osm
+    };
+
+    if (LEAF_CONFIG.satelliteTileUrl) {
+      layers["Satellite"] = L.tileLayer(
+        LEAF_CONFIG.satelliteTileUrl,
+        {
+          maxZoom: 19,
+          attribution: LEAF_CONFIG.satelliteAttribution
+        }
+      );
+    }
+
+    if (layers["Satellite"]) {
+      layers["Satellite"].addTo(leafMap);
+      leafMap.removeLayer(osm);
+    }
+
+    L.control.layers(layers).addTo(leafMap);
+
+    leafMap.on("click", e => {
+      parcelPoints.push([e.latlng.lat, e.latlng.lng]);
+      drawParcel();
+    });
+  }
+
+  setTimeout(() => {
+    leafMap.invalidateSize();
+
+    drawParcel(false);
+    if (parcelPoints.length >= 3) {
+      leafMap.fitBounds(L.latLngBounds(parcelPoints), { maxZoom: 16 });
+    } else if (
+      mapSelection &&
+      Number.isFinite(mapSelection.lat) &&
+      Number.isFinite(mapSelection.lng)
+    ) {
+      setFieldCoordinates(
+        mapSelection.lat,
+        mapSelection.lng,
+        false
+      );
+
+      leafMap.setView(
+        [mapSelection.lat, mapSelection.lng],
+        15
+      );
+    } else {
+      if (leafMarker) {
+        leafMap.removeLayer(leafMarker);
+        leafMarker = null;
+      }
+
+      leafMap.setView([32.34, -6.36], 10);
+    }
+  }, 100);
+}
+
+function setFieldCoordinates(lat, lng, updateAddress = true) {
+  lat = Number(lat);
+  lng = Number(lng);
+
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    Math.abs(lat) > 90 ||
+    Math.abs(lng) > 180
+  ) {
+    return;
+  }
+
+  mapSelection = { lat, lng };
+
+  if (leafMap) {
+    if (leafMarker) {
+      leafMarker.setLatLng([lat, lng]);
+    } else {
+      leafMarker = L.marker([lat, lng]).addTo(leafMap);
+    }
+  }
+
+  $("map-coordinates").textContent =
+    `GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+  if (
+    updateAddress &&
+    !$("field-location").value.trim()
+  ) {
+    $("field-location").value =
+      `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  }
+}
+
+// ==========================================
+// PARCEL POLYGON + PIXELS
+// ==========================================
+
+let parcelPoints = [];      // [[lat, lng], ...]
+let parcelLayer = null;
+let pixelLayer = null;
+let pixelTimer = null;
+
+function parcelGeoJSON() {
+  if (parcelPoints.length < 3) return null;
+  const ring = parcelPoints.map(([lat, lng]) => [lng, lat]);
+  ring.push(ring[0]);
+  return { type: "Polygon", coordinates: [ring] };
+}
+
+function drawParcel(refreshPixels = true) {
+  if (!leafMap) return;
+  if (parcelLayer) leafMap.removeLayer(parcelLayer);
+  parcelLayer = null;
+  if (parcelPoints.length === 1) {
+    parcelLayer = L.circleMarker(parcelPoints[0], { radius: 5, color: "#2E7D32" }).addTo(leafMap);
+  } else if (parcelPoints.length === 2) {
+    parcelLayer = L.polyline(parcelPoints, { color: "#2E7D32" }).addTo(leafMap);
+  } else if (parcelPoints.length >= 3) {
+    parcelLayer = L.polygon(parcelPoints, { color: "#2E7D32", weight: 2, fillOpacity: 0.25 }).addTo(leafMap);
+  }
+
+  if (parcelPoints.length) {
+    const n = parcelPoints.length;
+    const lat = parcelPoints.reduce((s, p) => s + p[0], 0) / n;
+    const lng = parcelPoints.reduce((s, p) => s + p[1], 0) / n;
+    mapSelection = { lat, lng };
+    if (leafMarker) { leafMap.removeLayer(leafMarker); leafMarker = null; }
+    if (!$("field-location").value.trim()) $("field-location").value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  } else {
+    mapSelection = null;
+  }
+
+  $("map-coordinates").textContent = parcelPoints.length < 3
+    ? `${parcelPoints.length} coin(s) : cliquez au moins 3 coins.`
+    : `${parcelPoints.length} coins : calcul des pixels…`;
+
+  if (refreshPixels) {
+    clearTimeout(pixelTimer);
+    pixelTimer = setTimeout(loadParcelPixels, 400);
+  }
+}
+
+async function loadParcelPixels() {
+  if (pixelLayer) { leafMap.removeLayer(pixelLayer); pixelLayer = null; }
+  const polygone = parcelGeoJSON();
+  if (!polygone) return;
+  try {
+    const r = await fetch(`${LEAF_API_BASE}/pixels`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ polygone, date_plantation: "2000-01-01" })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const p = await r.json();
+    pixelLayer = L.layerGroup(p.gaez.pixels.map(px =>
+      L.rectangle([[px.bbox[0], px.bbox[1]], [px.bbox[2], px.bbox[3]]],
+        { color: "#1565C0", weight: 1, dashArray: "4 3", fill: false })
+        .bindTooltip(`Pixel GAEZ : ${(px.part * 100).toFixed(0)} % de la parcelle`)
+    )).addTo(leafMap);
+    const m2 = Math.round(p.surface_ha * 10000);
+    if (m2 > 0) $("field-area").value = m2;
+    $("map-coordinates").textContent =
+      `Surface ${p.surface_ha} ha · pixels touchés : GAEZ ${p.gaez.nb_pixels} (≈ ${p.gaez.surface_pixel_ha} ha chacun), ` +
+      `GPM ${p.gpm.nb_pixels}, NASA POWER ${p.nasa_power.nb_pixels}`;
+  } catch (error) {
+    $("map-coordinates").textContent = `${parcelPoints.length} coins (serveur LEAF injoignable pour les pixels)`;
+  }
+}
+
+function undoParcelPoint() {
+  parcelPoints.pop();
+  drawParcel();
+}
+
+function clearParcel() {
+  parcelPoints = [];
+  if (pixelLayer && leafMap) { leafMap.removeLayer(pixelLayer); pixelLayer = null; }
+  drawParcel(false);
+}
+
+function openFieldModal(id = null) {
+  $("field-form").reset();
+  $("field-edit-id").value = id || "";
+
+  mapSelection = null;
+  parcelPoints = [];
+  if (pixelLayer && leafMap) { leafMap.removeLayer(pixelLayer); pixelLayer = null; }
+
+  $("map-coordinates").textContent =
+    "Click the map to select a real GPS location.";
+
+  $("field-modal-title").textContent =
+    tr(id ? "editField" : "addField");
+
+  if (id) {
+    const f = fields.find(x => x.id === id);
+    if (!f) return;
+
+    $("field-name").value = f.name;
+    $("field-area").value = f.area;
+    $("field-location").value = f.location;
+    $("field-crop").value = f.crop;
+    $("field-start").value = f.startDate;
+    $("field-notes").value = f.notes || "";
+    $("field-irrigation").value = f.irrigation ? "oui" : "non";
+    parcelPoints = (f.polygone?.coordinates?.[0] || []).slice(0, -1).map(([lng, lat]) => [lat, lng]);
+
+    if (
+      Number.isFinite(f.coordinates?.lat) &&
+      Number.isFinite(f.coordinates?.lng)
+    ) {
+      mapSelection = {
+        lat: f.coordinates.lat,
+        lng: f.coordinates.lng
+      };
+    }
+  }
+
+  openModal("field-modal");
+  initializeFieldMap();
+}
+
+function useGPS() {
+  if (!navigator.geolocation) {
+    toast("GPS not supported");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      setFieldCoordinates(
+        p.coords.latitude,
+        p.coords.longitude
+      );
+
+      leafMap?.setView(
+        [p.coords.latitude, p.coords.longitude],
+        16
+      );
+    },
+    () => toast(
+      "Location unavailable. Use HTTPS or localhost, or select on the map."
+    ),
+    {
+      enableHighAccuracy: true,
+      timeout: 15000
+    }
+  );
+}
+
+// ==========================================
+// SAVE FIELD — FASTAPI + SQLITE
+// ==========================================
+
+$("field-form").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const id = $("field-edit-id").value;
+
+  const data = {
+    name: $("field-name").value.trim(),
+    area: Number($("field-area").value),
+    location: $("field-location").value.trim(),
+    crop: $("field-crop").value,
+    startDate: $("field-start").value,
+    notes: $("field-notes").value.trim(),
+    coordinates: mapSelection,
+    polygone: parcelGeoJSON(),
+    irrigation: $("field-irrigation").value === "oui"
+  };
+
+  if (
+    !data.name ||
+    !data.location ||
+    data.area <= 0
+  ) {
+    return;
+  }
+
+  // Editing remains local in this prototype.
+  if (id) {
+    const f = fields.find(x => x.id === id);
+
+    if (f) {
+      Object.assign(f, data);
+    }
+
+    saveData();
+    closeModal("field-modal");
+    renderAll();
+
+    toast(tr("fieldUpdated"));
+    return;
+  }
+
+  if (
+    !data.coordinates ||
+    !Number.isFinite(data.coordinates.lat) ||
+    !Number.isFinite(data.coordinates.lng)
+  ) {
+    toast("Dessine la parcelle sur la carte (au moins 3 coins).");
+    return;
+  }
+
+  if (!data.polygone) {
+    toast("Dessine la parcelle : au moins 3 coins sur la carte.");
+    return;
+  }
+
+  const champAPI = {
+    nom: data.name,
+    latitude: data.coordinates.lat,
+    longitude: data.coordinates.lng,
+    surface: data.area,
+    date_plantation: data.startDate,
+    culture: data.crop,
+    adresse: data.location,
+    polygone: data.polygone,
+    irrigation: data.irrigation
+  };
+
+  console.log("Données envoyées à FastAPI :", champAPI);
+
+  try {
+    const response = await fetch(
+      `${LEAF_API_BASE}/champs`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(champAPI)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Erreur HTTP ${response.status}`
+      );
+    }
+
+    const resultat = await response.json();
+
+    console.log("Réponse FastAPI :", resultat);
+
+    fields.push({
+      id: uid(),
+      backendId: resultat.id,
+      ...data,
+      analysis: null,
+      tasks: []
+    });
+
+    saveData();
+    closeModal("field-modal");
+    renderAll();
+
+    toast(tr("fieldAdded"));
+
+  } catch (error) {
+    console.error("Erreur FastAPI :", error);
+
+    toast(
+      "Impossible d'enregistrer le champ sur le serveur."
+    );
+  }
+});
+
+function deleteField(id) {
+  const f = fields.find(x => x.id === id);
+  if (!f) return;
+
+  if (!confirm(tr("deleteConfirm"))) return;
+
+  fields = fields.filter(x => x.id !== id);
+
+  transactions = transactions.filter(
+    t => t.fieldId !== id
+  );
+
+  saveData();
+  renderAll();
+
+  toast(tr("fieldDeleted"));
+}
+
+// ==========================================
+// GAEZ V5 + NASA POWER
+// ==========================================
+
+async function startAnalysis(id) {
+  const f = fields.find(x => x.id === id);
+  if (!f) return;
+
+  const polygone = f.polygone;
+  const lat = Number(f.coordinates?.lat);
+  const lng = Number(f.coordinates?.lng);
+  if (!polygone && (!Number.isFinite(lat) || !Number.isFinite(lng))) {
+    toast("Dessine la parcelle sur la carte avant l'analyse.");
+    return;
+  }
+  if (f.analysis?.status === "loading") return;
+
+  f.analysis = { status: "loading", startedAt: new Date().toISOString() };
+  saveData();
+  renderAll();
+
+  try {
+    const response = await fetch(`${LEAF_API_BASE}/analyse`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nom: f.name,
+        polygone: polygone || null,
+        latitude: polygone ? null : lat,
+        longitude: polygone ? null : lng,
+        date_plantation: f.startDate,
+        irrigation: Boolean(f.irrigation),
+        champ_id: f.backendId ?? null
+      })
+    });
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(
+        typeof payload.detail === "string" ? payload.detail : `HTTP ${response.status}`
+      );
+    }
+    const r = await response.json();
+    f.analysis = {
+      status: "success",
+      leaf: {
+        id: r.id,
+        rapport: r.rapport_pdf,
+        periode: r.climat.periode,
+        indices: r.climat.indices,
+        sourcePluie: r.climat.source_pluie,
+        pixels: Object.fromEntries(
+          Object.entries(r.pixels).filter(([, v]) => v).map(([k, v]) =>
+            [k, { n: v.nb_pixels, ha: v.surface_pixel_ha, source: v.source }])
+        ),
+        resume: r.resume,
+        cultures: r.cultures.map(c => ({
+          nom: c.nom, statut: c.statut, etape: c.etape,
+          justification: c.justification,
+          classe: c.sol?.classe_majoritaire, aptitude: c.sol?.aptitude
+        })),
+        rotations: r.rotations.rotations.map(x => ({ titre: x.titre, pourquoi: x.pourquoi, risques: x.risques })),
+        messageRotation: r.rotations.message,
+        surfaceHa: r.parcelle.surface_ha
+      }
+    };
+  } catch (error) {
+    console.error("Erreur analyse LEAF :", error);
+    f.analysis = { status: "error", error: String(error.message || error) };
+  }
+  saveData();
+  renderAll();
+}
+
+// ==========================================
+// ANALYSIS DISPLAY
+// ==========================================
+
+function analysisHTML(a) {
+  if (!a) return "";
+  if (a.status === "loading") {
+    return `<div class="analysis">Analyse en cours : climat (NASA POWER, GPM) et sol (GAEZ) pour 40 cultures… (10 à 60 s au premier passage sur un pixel)</div>`;
+  }
+  if (a.status === "error" || !a.leaf) {
+    return `<div class="analysis"><strong>Analyse : erreur</strong><br>${esc(a.error || "Ancienne analyse : relancez-la.")}</div>`;
+  }
+
+  const L_ = a.leaf;
+  const ind = L_.indices || {};
+  const fmt = v => (v === null || v === undefined ? "—" : Number(v).toFixed(2));
+  const pix = Object.values(L_.pixels || {})
+    .map(p => `${esc(p.source)} : ${p.n} pixel(s) de ≈ ${p.ha} ha`).join("<br>");
+  const liste = statut => L_.cultures.filter(c => c.statut === statut);
+  const ligne = c => `<li><b>${esc(c.nom)}</b>${c.classe ? ` · GAEZ ${c.classe} (${esc(c.aptitude)})` : ""}` +
+    `${c.justification?.length ? ` : ${esc((c.etape ? `[${c.etape}] ` : "") + c.justification.join(" ; "))}` : ""}</li>`;
+  const bloc = (titre, statut, ouvert) => {
+    const l = liste(statut);
+    return `<details ${ouvert ? "open" : ""}><summary><strong>${titre} (${l.length})</strong></summary>` +
+      (l.length ? `<ul style="margin:4px 0 6px 18px">${l.map(ligne).join("")}</ul>` : "<p>Aucune.</p>") + `</details>`;
+  };
+  const rot = L_.rotations?.length
+    ? L_.rotations.map((r, k) => `<li><b>Rotation ${k + 1} : ${esc(r.titre)}</b><br><small>${esc(r.pourquoi)}<br>Risques : ${esc(r.risques.join(" ; "))}</small></li>`).join("")
+    : `<li>${esc(L_.messageRotation || "Aucune rotation possible.")}</li>`;
+
+  return `
+    <div class="analysis">
+      <strong>Indices de stabilité ${esc(L_.periode)}</strong> (0 instable → 1 stable)<br>
+      Température ${fmt(ind.temperature)} · Humidité ${fmt(ind.humidite)} · Pluie ${fmt(ind.pluie)} · Vent ${fmt(ind.vent)} <small>(vent provisoire)</small><br>
+      <small>Pluie : ${esc(L_.sourcePluie)}</small>
+      <hr style="margin:10px 0;opacity:.25">
+      <strong>Pixels utilisés</strong> (parcelle ${esc(L_.surfaceHa)} ha)<br><small>${pix}</small>
+      <hr style="margin:10px 0;opacity:.25">
+      ${bloc("Cultures retenues", "retenue", true)}
+      ${bloc("Cultures à vérifier", "a_verifier", false)}
+      ${bloc("Cultures écartées", "ecartee", false)}
+      <hr style="margin:10px 0;opacity:.25">
+      <strong>Rotations proposées</strong>
+      ${L_.rotations?.length && L_.messageRotation ? `<br><small>⚠️ ${esc(L_.messageRotation)}</small>` : ""}
+      <ol style="margin:4px 0 6px 18px">${rot}</ol>
+      <a class="btn secondary btn-sm" href="${LEAF_API_BASE}${L_.rapport}" target="_blank" rel="noopener">📄 Rapport PDF</a>
+      <p><small>Seuils provisoires à valider par l'agronome. Décision finale : agriculteur + technicien agricole.</small></p>
+    </div>`;
+}
+
+// ==========================================
+// MAINTENANCE TASKS
+// ==========================================
+
+function openTaskModal(fieldId = "") {
+  if (!fields.length) {
+    toast(tr("addFirst"));
+    openFieldModal();
+    return;
+  }
+
+  populateSelects();
+
+  $("task-form").reset();
+
+  $("task-field").value =
+    fieldId || fields[0].id;
+
+  $("task-date").value =
+    new Date().toISOString().slice(0, 10);
+
+  openModal("task-modal");
+}
+
+function chooseTaskField() {
+  if (!fields.length) {
+    openFieldModal();
+    return;
+  }
+
+  if (fields.length === 1) {
+    openTaskModal(fields[0].id);
+    return;
+  }
+
+  const answer = prompt(
+    fields.map(
+      (f, i) => `${i + 1}. ${f.name}`
+    ).join("\n")
+  );
+
+  const index = Number(answer) - 1;
+
+  if (
+    Number.isInteger(index) &&
+    fields[index]
+  ) {
+    openTaskModal(fields[index].id);
+  }
+}
+
+$("task-form").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const f = fields.find(
+    x => x.id === $("task-field").value
+  );
+
+  if (!f) return;
+
+  f.tasks.push({
+    id: uid(),
+    name: $("task-name").value.trim(),
+    date: $("task-date").value,
+    priority: $("task-priority").value,
+    done: false
+  });
+
+  saveData();
+  closeModal("task-modal");
+  renderAll();
+
+  toast(tr("taskAdded"));
+});
+
+function toggleTask(fid, tid) {
+  const f = fields.find(x => x.id === fid);
+  const t = f?.tasks.find(x => x.id === tid);
+
+  if (!t) return;
+
+  t.done = !t.done;
+
+  saveData();
+  renderAll();
+}
+
+function deleteTask(fid, tid) {
+  if (!confirm(tr("deleteTaskConfirm"))) return;
+
+  const f = fields.find(x => x.id === fid);
+
+  if (!f) return;
+
+  f.tasks = f.tasks.filter(x => x.id !== tid);
+
+  saveData();
+  renderAll();
+
+  toast(tr("taskDeleted"));
+}
+
+function taskHTML(f, t) {
+  return `
+    <div class="task ${t.done ? "done" : ""}">
+      <input
+        type="checkbox"
+        ${t.done ? "checked" : ""}
+        onchange="toggleTask('${f.id}','${t.id}')"
+      >
+
+      <div class="task-text">
+        ${esc(t.name)}
+        <small>
+          ${tr("dueDate")}:
+          ${dateText(t.date)}
+          · ${esc(t.priority)}
+        </small>
+      </div>
+
+      <button
+        class="icon-btn"
+        onclick="deleteTask('${f.id}','${t.id}')"
+        aria-label="${tr("delete")}"
+      >×</button>
+    </div>
+  `;
+}
+
+// ==========================================
+// FIELD CARDS
+// ==========================================
+
+function fieldCard(f) {
+  const pending = f.tasks.filter(
+    t => !t.done
+  ).length;
+
+  return `
+    <article class="field-card">
+      <div class="field-cover">
+        <h3>🌾 ${esc(f.name)}</h3>
+        <p>📍 ${esc(f.location)}</p>
+      </div>
+
+      <div class="field-body">
+        <div class="detail-grid">
+          <div>
+            <div class="detail-label">
+              ${tr("area")}
+            </div>
+            <div class="detail-value">
+              ${Number(f.area).toLocaleString()} m²
+            </div>
+          </div>
+
+          <div>
+            <div class="detail-label">
+              ${tr("crop")}
+            </div>
+            <div class="detail-value">
+              ${esc(f.crop)}
+            </div>
+          </div>
+
+          <div>
+            <div class="detail-label">
+              ${tr("cultivationStart")}
+            </div>
+            <div class="detail-value">
+              ${dateText(f.startDate)}
+            </div>
+          </div>
+
+          <div>
+            <div class="detail-label">
+              ${tr("open")}
+            </div>
+            <div class="detail-value">
+              ${pending}
+            </div>
+          </div>
+        </div>
+
+        <span class="status ${f.analysis ? "active" : ""}">
+          ${
+            tr(
+              f.analysis
+                ? "analysisStarted"
+                : "notAnalysed"
+            )
+          }
+        </span>
+
+        <div class="field-actions">
+          <button
+            class="btn primary"
+            onclick="startAnalysis('${f.id}')"
+          >
+            ${tr("startAnalysis")}
+          </button>
+
+          <button
+            class="btn secondary"
+            onclick="openTaskModal('${f.id}')"
+          >
+            ${plus}${tr("addTask")}
+          </button>
+        </div>
+
+        ${analysisHTML(f.analysis)}
+
+        <div style="margin-top:16px">
+          <div class="panel-head">
+            <h3 style="font-size:13px">
+              ${tr("tasks")}
+            </h3>
+            <span class="status">
+              ${f.tasks.length}
+            </span>
+          </div>
+
+          ${
+            f.tasks.length
+              ? f.tasks.map(
+                  t => taskHTML(f, t)
+                ).join("")
+              : `<p class="small">${tr("noTasks")}</p>`
+          }
+        </div>
+
+        ${
+          f.notes
+            ? `
+              <p
+                class="small"
+                style="margin-top:12px"
+              >
+                ${tr("notes")}: ${esc(f.notes)}
+              </p>
+            `
+            : ""
+        }
+
+        <div class="field-actions">
+          <button
+            class="btn secondary"
+            onclick="openFieldModal('${f.id}')"
+          >
+            ${tr("editField")}
+          </button>
+
+          <button
+            class="btn danger"
+            onclick="deleteField('${f.id}')"
+          >
+            ${tr("deleteField")}
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderFields() {
+  const html = fields.length
+    ? fields.map(fieldCard).join("")
+    : `
+      <div
+        class="empty panel"
+        style="grid-column:1/-1"
+      >
+        <b>${tr("noFields")}</b>
+        ${tr("addFirst")}
+        <br>
+        <button
+          class="btn primary"
+          style="margin-top:12px"
+          onclick="openFieldModal()"
+        >
+          ${plus}${tr("addField")}
+        </button>
+      </div>
+    `;
+
+  $("fields-grid").innerHTML = html;
+  $("dashboard-fields").innerHTML = html;
+}
+
+function renderTasks() {
+  $("all-tasks").innerHTML = fields.length
+    ? fields.map(f => `
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>${esc(f.name)}</h3>
+              <p>
+                ${esc(f.location)}
+                · ${esc(f.crop)}
+              </p>
+            </div>
+
+            <button
+              class="btn secondary btn-sm"
+              onclick="openTaskModal('${f.id}')"
+            >
+              ${plus}${tr("addTask")}
+            </button>
+          </div>
+
+          ${
+            f.tasks.length
+              ? f.tasks.map(
+                  t => taskHTML(f, t)
+                ).join("")
+              : `<p class="small">${tr("noFieldTasks")}</p>`
+          }
+        </div>
+      `).join("")
+    : `
+      <div class="panel empty">
+        <b>${tr("noFields")}</b>
+        ${tr("addFirst")}
+        <br>
+        <button
+          class="btn primary"
+          style="margin-top:12px"
+          onclick="openFieldModal()"
+        >
+          ${plus}${tr("addField")}
+        </button>
+      </div>
+    `;
+}
+
+function populateSelects() {
+  const keepH = $("health-field").value;
+  const keepM = $("money-field").value;
+
+  const opts = fields.map(f =>
+    `<option value="${f.id}">${esc(f.name)}</option>`
+  ).join("");
+
+  $("health-field").innerHTML =
+    `<option value="">—</option>` + opts;
+
+  $("money-field").innerHTML =
+    `<option value="">${tr("general")}</option>` + opts;
+
+  $("task-field").innerHTML = opts;
+
+  if (fields.some(f => f.id === keepH)) {
+    $("health-field").value = keepH;
+  }
+
+  if (fields.some(f => f.id === keepM)) {
+    $("money-field").value = keepM;
+  }
+}
+
+// ==========================================
+// PLANT PHOTO / CAMERA
+// ==========================================
+
+function setPlantImage(file) {
+  if (!file) return;
+
+  if (plantImageUrl) {
+    URL.revokeObjectURL(plantImageUrl);
+  }
+
+  plantImage = file;
+  plantImageUrl = URL.createObjectURL(file);
+
+  $("photo-preview").src = plantImageUrl;
+
+  $("preview-wrap").classList.remove("hidden");
+
+  toast(tr("photoAdded"));
+}
+
+function removePhoto() {
+  if (plantImageUrl) {
+    URL.revokeObjectURL(plantImageUrl);
+  }
+
+  plantImage = null;
+  plantImageUrl = null;
+
+  $("photo-preview").removeAttribute("src");
+  $("preview-wrap").classList.add("hidden");
+
+  $("photo-input").value = "";
+  $("photo-capture").value = "";
+}
+
+$("photo-input").addEventListener(
+  "change",
+  e => setPlantImage(e.target.files?.[0])
+);
+
+$("photo-capture").addEventListener(
+  "change",
+  e => setPlantImage(e.target.files?.[0])
+);
+
+function stopCamera() {
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+
+  const v = $("camera-video");
+
+  if (v) v.srcObject = null;
+}
+
+async function startCamera() {
+  stopCamera();
+
+  $("camera-error").classList.add("hidden");
+
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: camFacing },
+        width: { ideal: 1280 },
+        height: { ideal: 960 }
+      },
+      audio: false
+    });
+
+    const v = $("camera-video");
+
+    v.srcObject = camStream;
+
+    v.classList.toggle(
+      "mirror",
+      camFacing === "user"
+    );
+
+    await v.play().catch(() => {});
+
+  } catch (err) {
+    const denied = err && (
+      err.name === "NotAllowedError" ||
+      err.name === "SecurityError"
+    );
+
+    $("camera-error").textContent = tr(
+      denied ? "cameraDenied" : "cameraUnavailable"
+    );
+
+    $("camera-error").classList.remove("hidden");
+  }
+}
+
+async function openCamera() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    $("photo-capture").click();
+    return;
+  }
+
+  openModal("camera-modal");
+
+  await startCamera();
+}
+
+function switchCamera() {
+  camFacing =
+    camFacing === "environment"
+      ? "user"
+      : "environment";
+
+  startCamera();
+}
+
+function closeCamera() {
+  stopCamera();
+  closeModal("camera-modal");
+}
+
+function captureFrame() {
+  const v = $("camera-video");
+
+  if (!camStream || !v.videoWidth) {
+    toast(tr("cameraUnavailable"));
+    return;
+  }
+
+  const c = $("camera-canvas");
+
+  c.width = v.videoWidth;
+  c.height = v.videoHeight;
+
+  const g = c.getContext("2d");
+
+  if (camFacing === "user") {
+    g.translate(c.width, 0);
+    g.scale(-1, 1);
+  }
+
+  g.drawImage(
+    v,
+    0,
+    0,
+    c.width,
+    c.height
+  );
+
+  c.toBlob(b => {
+    if (!b) return;
+
+    setPlantImage(
+      new File(
+        [b],
+        "plant-" + Date.now() + ".jpg",
+        { type: "image/jpeg" }
+      )
+    );
+
+    closeCamera();
+
+  }, "image/jpeg", 0.92);
+}
+
+// ==========================================
+// PLANT INSPECTION
+// ==========================================
+
+// Réduit la photo (côté long ≤ 1568 px, JPEG) avant envoi à l'IA
+function imageEnBase64(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1568 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * k);
+      c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL("image/jpeg", 0.88).split(",")[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image illisible")); };
+    img.src = url;
+  });
+}
+
+const T_IA = {
+  fr: { wait: "Analyse de la photo par l'IA… (10 à 30 s)", title: "Diagnostic IA de la plante",
+        seen: "Ce que montre la photo", plant: "Plante", state: "État général", hyp: "Hypothèses",
+        conf: "confiance", actions: "Actions recommandées", tech: "Quand appeler un technicien",
+        photo: "Qualité de la photo", notPlant: "Aucune plante identifiable sur cette photo.",
+        noPhoto: "Ajoutez une photo pour lancer l'analyse IA.", err: "Analyse IA impossible",
+        limit: "Diagnostic IA indicatif : à confirmer au champ par un agronome avant tout traitement." },
+  en: { wait: "AI is analysing the photo… (10 to 30 s)", title: "AI plant diagnosis",
+        seen: "What the photo shows", plant: "Plant", state: "Overall state", hyp: "Hypotheses",
+        conf: "confidence", actions: "Recommended actions", tech: "When to call a technician",
+        photo: "Photo quality", notPlant: "No identifiable plant in this photo.",
+        noPhoto: "Add a photo to run the AI analysis.", err: "AI analysis failed",
+        limit: "Indicative AI diagnosis: confirm in the field with an agronomist before any treatment." },
+  ar: { wait: "جارٍ تحليل الصورة بالذكاء الاصطناعي… (10 إلى 30 ثانية)", title: "تشخيص النبتة بالذكاء الاصطناعي",
+        seen: "ما تظهره الصورة", plant: "النبتة", state: "الحالة العامة", hyp: "الفرضيات",
+        conf: "الثقة", actions: "الإجراءات الموصى بها", tech: "متى تتصل بتقني",
+        photo: "جودة الصورة", notPlant: "لا توجد نبتة واضحة في هذه الصورة.",
+        noPhoto: "أضف صورة لبدء التحليل.", err: "تعذر التحليل",
+        limit: "تشخيص استرشادي: يجب تأكيده في الحقل مع مهندس زراعي قبل أي علاج." }
+};
+
+async function analysePlant() {
+  const t = T_IA[lang] || T_IA.fr;
+  const f = fields.find(x => x.id === $("health-field").value);
+  const sym = $("symptoms").value.trim();
+  const box = $("diagnosis");
+
+  if (!plantImage) {
+    rapportSansIA();
+    box.insertAdjacentHTML("afterbegin", `<p><b>⚠️ ${esc(t.noPhoto)}</b></p>`);
+    return;
+  }
+
+  const img = plantImageUrl ? `<img class="report-img" src="${plantImageUrl}" alt="${tr("photoLabel")}">` : "";
+  box.innerHTML = `<h3>${t.title}</h3>${img}<p>⏳ ${esc(t.wait)}</p>`;
+
+  try {
+    const res = await fetch(`${LEAF_API_BASE}/plante/analyse`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image: await imageEnBase64(plantImage), media_type: "image/jpeg",
+        culture: f?.crop || null, symptomes: sym || null, parcelle: f?.name || null, langue: lang
+      })
+    });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(d.detail || `HTTP ${res.status}`);
+
+    const hyp = (d.hypotheses || []).map(h =>
+      `<li><b>${esc(h.nom)}</b> <small>(${esc(h.type)} · ${t.conf} ${esc(h.confiance)})</small>` +
+      (h.indices?.length ? `<br><small>${esc(h.indices.join(" ; "))}</small>` : "") + `</li>`).join("");
+
+    box.innerHTML = `
+      <h3>${t.title}</h3>${img}
+      <p><strong>${tr("field")}:</strong> ${esc(f?.name || "—")} · <strong>${tr("crop")}:</strong> ${esc(f?.crop || "—")}</p>
+      <p><strong>${tr("symptomProvided")}:</strong> ${esc(sym || "—")}</p>
+      ${d.est_une_plante ? "" : `<p><b>⚠️ ${esc(t.notPlant)}</b></p>`}
+      <p><strong>${t.seen}:</strong> ${esc(d.observation)}</p>
+      <p><strong>${t.plant}:</strong> ${esc(d.plante_identifiee)} · <strong>${t.state}:</strong> ${esc(d.etat_general)}</p>
+      ${hyp ? `<p style="margin-top:10px"><strong>${t.hyp}</strong></p><ol style="margin-left:18px">${hyp}</ol>` : ""}
+      ${d.actions?.length ? `<p style="margin-top:10px"><strong>${t.actions}</strong></p><ul>${d.actions.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      <p style="margin-top:10px"><strong>${t.tech}:</strong> ${esc(d.quand_appeler_technicien)}</p>
+      <p><strong>${t.photo}:</strong> ${esc(d.qualite_photo)}</p>
+      <p style="margin-top:10px"><small>${esc(t.limit)} (${esc(d.modele || "Claude")})</small></p>`;
+  } catch (e) {
+    console.error("Analyse IA :", e);
+    rapportSansIA();
+    box.insertAdjacentHTML("afterbegin", `<p><b>⚠️ ${esc(t.err)} :</b> ${esc(e.message || e)}</p>`);
+  }
+}
+
+// Rapport générique (sans IA) : repli si pas de photo ou si l'IA est indisponible
+function rapportSansIA() {
+  const f = fields.find(
+    x => x.id === $("health-field").value
+  );
+
+  const sym = $("symptoms").value.trim();
+
+  const next =
+    lang === "fr"
+      ? [
+          "Inspecter les plantes touchées et saines.",
+          "Vérifier les feuilles, les tiges et les racines.",
+          "Noter les changements récents d'irrigation ou de fertilisation.",
+          "Confirmer la cause avec un agronome avant tout traitement."
+        ]
+      : lang === "ar"
+        ? [
+            "افحص النباتات المصابة والسليمة.",
+            "تحقق من الأوراق والسيقان والجذور.",
+            "سجل التغييرات الأخيرة في الري والتسميد.",
+            "تأكد من السبب مع مهندس زراعي قبل أي علاج."
+          ]
+        : [
+            "Inspect both affected and healthy plants.",
+            "Check leaves, stems and roots.",
+            "Record recent irrigation or fertilizer changes.",
+            "Confirm the cause with an agronomist before treatment."
+          ];
+
+  $("diagnosis").innerHTML = `
+    <h3>${tr("reportTitle")}</h3>
+
+    ${
+      plantImageUrl
+        ? `<img
+             class="report-img"
+             src="${plantImageUrl}"
+             alt="${tr("photoLabel")}"
+           >`
+        : ""
+    }
+
+    <p>
+      <strong>${tr("field")}:</strong>
+      ${esc(f?.name || "—")}
+    </p>
+
+    <p>
+      <strong>${tr("crop")}:</strong>
+      ${esc(f?.crop || "—")}
+    </p>
+
+    <p>
+      <strong>${tr("symptomProvided")}:</strong>
+      ${esc(sym || "—")}
+    </p>
+
+    <p style="margin-top:10px">
+      <strong>${tr("nextSteps")}</strong>
+    </p>
+
+    <ul>
+      ${next.map(x => `<li>${x}</li>`).join("")}
+    </ul>
+
+    <p style="margin-top:10px">
+      ${tr("reportLimit")}
+    </p>
+  `;
+}
+
+function printReport() {
+  const w = window.open("", "_blank");
+
+  if (!w) {
+    toast("Allow pop-ups to print");
+    return;
+  }
+
+  w.document.write(`
+    <html
+      lang="${lang}"
+      dir="${lang === "ar" ? "rtl" : "ltr"}"
+    >
+      <head>
+        <meta charset="utf-8">
+        <title>LEAFTEAM Report</title>
+        <style>
+          body {
+            font: 15px Cairo, Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.8;
+            color: #20352B;
+          }
+
+          h1 { color: #16382B; }
+
+          img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+          }
+        </style>
+      </head>
+
+      <body>
+        <h1>LEAFTEAM — ${tr("inspectionReport")}</h1>
+
+        <p>
+          ${esc(user?.name || "")}
+          · ${new Date().toLocaleString()}
+        </p>
+
+        <hr>
+
+        ${$("diagnosis").innerHTML}
+
+        <p style="margin-top:25px">
+          ${tr("safetyNote")}
+        </p>
+
+        <script>
+          window.onload = () =>
+            setTimeout(() => window.print(), 300)
+        <\/script>
+      </body>
+    </html>
+  `);
+
+  w.document.close();
+}
+
+// ==========================================
+// FINANCE
+// ==========================================
+
+$("finance-form").addEventListener("submit", e => {
+  e.preventDefault();
+
+  transactions.unshift({
+    id: uid(),
+    type: $("money-type").value,
+    amount: Number($("money-amount").value),
+    desc: $("money-desc").value.trim(),
+    fieldId: $("money-field").value,
+    date: new Date().toISOString().slice(0, 10)
+  });
+
+  saveData();
+
+  e.target.reset();
+
+  renderFinance();
+
+  toast(tr("transactionSaved"));
+});
+
+function deleteTransaction(id) {
+  if (!confirm(tr("deleteTaskConfirm"))) return;
+
+  transactions = transactions.filter(
+    t => t.id !== id
+  );
+
+  saveData();
+  renderFinance();
+}
+
+function renderFinance() {
+  const expense = transactions
+    .filter(t => t.type === "expense")
+    .reduce((s, t) => s + t.amount, 0);
+
+  const gain = transactions
+    .filter(t => t.type === "gain")
+    .reduce((s, t) => s + t.amount, 0);
+
+  const net = gain - expense;
+
+  $("expense-total").textContent = money(expense);
+  $("gain-total").textContent = money(gain);
+  $("net-total").textContent = money(net);
+
+  $("net-total").style.color =
+    net < 0 ? "var(--red)" : "var(--green)";
+
+  $("finance-list").innerHTML = transactions.length
+    ? transactions.map(t => {
+        const f = fields.find(
+          x => x.id === t.fieldId
+        );
+
+        return `
+          <div class="transaction">
+            <div>
+              <strong>${esc(t.desc)}</strong>
+              <small>
+                ${dateText(t.date)}
+                · ${esc(f?.name || tr("general"))}
+              </small>
+            </div>
+
+            <div style="text-align:end">
+              <div
+                class="${
+                  t.type === "expense"
+                    ? "expense"
+                    : "gain"
+                }"
+              >
+                ${
+                  t.type === "expense"
+                    ? "−"
+                    : "+"
+                }${money(t.amount)}
+              </div>
+
+              <button
+                class="icon-btn"
+                onclick="deleteTransaction('${t.id}')"
+                aria-label="${tr("delete")}"
+              >×</button>
+            </div>
+          </div>
+        `;
+      }).join("")
+    : `
+      <div class="empty">
+        ${tr("noTransactions")}
+      </div>
+    `;
+
+  $("finance-insight").textContent =
+    !transactions.length
+      ? tr("noFinance")
+      : net < 0
+        ? `${tr("netNegative")} ${money(-net)}.`
+        : `${tr("netPositive")} ${money(net)}.`;
+}
+
+// ==========================================
+// CHAT ASSISTANT — DEMO
+// ==========================================
+
+function openChat() {
+  openModal("chat-modal");
+}
+
+function addMessage(text, type) {
+  const el = document.createElement("div");
+
+  el.className =
+    "msg " + (type === "user" ? "user" : "");
+
+  el.textContent = text;
+
+  $("chat-messages").appendChild(el);
+
+  $("chat-messages").scrollTop =
+    $("chat-messages").scrollHeight;
+}
+
+function sendChat() {
+  const input = $("chat-input");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  addMessage(text, "user");
+
+  input.value = "";
+
+  const q = text.toLowerCase();
+
+  let answer;
+
+  if (
+    q.includes("task") ||
+    q.includes("maintenance") ||
+    q.includes("مهمة") ||
+    q.includes("tâche")
+  ) {
+    answer =
+      lang === "fr"
+        ? "Ouvrez Entretien. Chaque tâche est rattachée à une parcelle et peut être terminée ou supprimée."
+        : lang === "ar"
+          ? "افتح الصيانة. ترتبط كل مهمة بحقل محدد ويمكنك إكمالها أو حذفها."
+          : "Open Maintenance. Each task belongs to a field and can be completed or deleted.";
+
+  } else if (
+    q.includes("money") ||
+    q.includes("expense") ||
+    q.includes("finance") ||
+    q.includes("مال") ||
+    q.includes("dépense")
+  ) {
+    answer =
+      lang === "fr"
+        ? "Enregistrez les dépenses et les revenus dans Finances agricoles. Le solde affiché est basé uniquement sur vos entrées."
+        : lang === "ar"
+          ? "سجل المصاريف والمداخيل في المالية الزراعية. يعتمد الرصيد على البيانات التي أدخلتها."
+          : "Record expenses and gains in Farm Finance. The balance is based only on your entries.";
+
+  } else if (
+    q.includes("plant") ||
+    q.includes("disease") ||
+    q.includes("مرض") ||
+    q.includes("plante")
+  ) {
+    answer = tr("safetyNote");
+
+  } else {
+    answer =
+      lang === "fr"
+        ? "Je peux vous aider à organiser les parcelles, les tâches et les dépenses. Cette démo utilise des réponses prédéfinies."
+        : lang === "ar"
+          ? "يمكنني مساعدتك في تنظيم الحقول والمهام والمصاريف. تستخدم هذه النسخة ردوداً تجريبية."
+          : "I can help organize fields, tasks and farm expenses. This demo uses sample responses, not a connected AI model.";
+  }
+
+  setTimeout(
+    () => addMessage(answer, "ai"),
+    150
+  );
+}
+
+// ==========================================
+// LOCAL STORAGE
+// ==========================================
+
+function saveData() {
+  localStorage.setItem(
+    "leaf-fields",
+    JSON.stringify(fields)
+  );
+
+  localStorage.setItem(
+    "leaf-transactions",
+    JSON.stringify(transactions)
+  );
+}
+
+function loadData() {
+  try {
+    fields = JSON.parse(
+      localStorage.getItem("leaf-fields") || "[]"
+    );
+  } catch {
+    fields = [];
+  }
+
+  try {
+    transactions = JSON.parse(
+      localStorage.getItem("leaf-transactions") || "[]"
+    );
+  } catch {
+    transactions = [];
+  }
+
+  fields.forEach(f => {
+    if (!Array.isArray(f.tasks)) {
+      f.tasks = [];
+    }
+  });
+}
+
+// ==========================================
+// DASHBOARD
+// ==========================================
+
+function renderAll() {
+  renderFields();
+  populateSelects();
+  renderTasks();
+  renderFinance();
+
+  $("stat-fields").textContent = fields.length;
+
+  const area = fields.reduce(
+    (s, f) => s + Number(f.area || 0),
+    0
+  );
+
+  $("stat-area").textContent =
+    area.toLocaleString() + " m²";
+
+  $("stat-hectares").textContent =
+    (area / 10000).toLocaleString(
+      undefined,
+      { maximumFractionDigits: 2 }
+    ) + " hectares";
+
+  $("stat-tasks").textContent =
+    fields.reduce(
+      (s, f) =>
+        s + f.tasks.filter(t => !t.done).length,
+      0
+    );
+}
+
+// ==========================================
+// ANIMATED LEAVES
+// ==========================================
+
+const canvas = $("leaves");
+const ctx = canvas.getContext("2d");
+
+let leaves = [];
+
+function resizeLeaves() {
+  canvas.width =
+    innerWidth * devicePixelRatio;
+
+  canvas.height =
+    innerHeight * devicePixelRatio;
+
+  ctx.setTransform(
+    devicePixelRatio,
+    0,
+    0,
+    devicePixelRatio,
+    0,
+    0
+  );
+
+  leaves = Array.from(
+    { length: 45 },
+    () => ({
+      x: Math.random() * innerWidth,
+      y: Math.random() * innerHeight,
+      size: 8 + Math.random() * 17,
+      speed: 0.15 + Math.random() * 0.4,
+      angle: Math.random() * 6,
+      turn: (Math.random() - 0.5) * 0.012
+    })
+  );
+}
+
+function drawLeaves() {
+  ctx.clearRect(
+    0,
+    0,
+    innerWidth,
+    innerHeight
+  );
+
+  leaves.forEach(l => {
+    ctx.save();
+
+    ctx.translate(l.x, l.y);
+    ctx.rotate(l.angle);
+
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = "#558667";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      0,
+      0,
+      l.size,
+      l.size * 0.45,
+      0,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.strokeStyle = "#24523F";
+
+    ctx.beginPath();
+    ctx.moveTo(-l.size, 0);
+    ctx.lineTo(l.size, 0);
+    ctx.stroke();
+
+    ctx.restore();
+
+    l.y += l.speed;
+    l.x += Math.sin(l.y / 100) * 0.2;
+    l.angle += l.turn;
+
+    if (l.y > innerHeight + 20) {
+      l.y = -20;
+      l.x = Math.random() * innerWidth;
+    }
+  });
+
+  requestAnimationFrame(drawLeaves);
+}
+
+addEventListener("resize", resizeLeaves);
+
+resizeLeaves();
+drawLeaves();
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+
+loadData();
+setLanguage(lang);
+
+// DEV : connexion sautée (mettre SKIP_AUTH à false pour retrouver l'écran de connexion)
+const SKIP_AUTH = true;
+if (SKIP_AUTH) {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("leaf-user") || "null"); } catch {}
+  enterApp(saved || { name: "Demo Farmer", email: "demo@leaf.local", role: "Farmer" });
+}
+
+// Existing helper retained for compatibility.
+async function enregistrerChamp(champ) {
+  const response = await fetch(
+    `${LEAF_API_BASE}/champs`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(champ)
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Échec de l'enregistrement"
+    );
+  }
+
+  return await response.json();
+}
+
+</script>
+</body>
+</html>

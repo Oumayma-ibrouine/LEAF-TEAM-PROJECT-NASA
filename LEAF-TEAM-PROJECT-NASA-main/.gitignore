@@ -1,0 +1,24 @@
+# Secrets — never commit (copy back-end/.env.example to back-end/.env)
+.env
+*.env
+!.env.example
+
+# Python environments and caches
+.venv/
+.venv-win/
+venv/
+__pycache__/
+*.pyc
+
+# Heavy data (FAO GAEZ rasters, ~1.4 GB): rebuild with back-end/download_gaez.py
+back-end/data/gaez/
+
+# Local data generated at runtime
+back-end/leaf.db
+back-end/cache/
+
+# System / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
